@@ -17,11 +17,24 @@
 (function () {
   'use strict';
 
-  var script = document.currentScript;
-  var ENDPOINT = (script && script.getAttribute('data-endpoint') || '').trim();
-  var MOUNT_SEL = (script && script.getAttribute('data-mount')) || '#rms-scheduler';
-  var TITLE = (script && script.getAttribute('data-title')) || 'Book a time';
-  var VIEW_TZ = (script && script.getAttribute('data-timezone')) || '';
+  // Resolve our own <script> even when injected dynamically (document.currentScript
+  // is null for appended scripts), so the embed page can build the tag at runtime.
+  var script = document.currentScript || (function () {
+    var ss = document.querySelectorAll('script[data-endpoint], script[src*="scheduler.js"]');
+    return ss[ss.length - 1] || null;
+  })();
+  var attr = function (n) { return (script && script.getAttribute(n)) || ''; };
+
+  var ENDPOINT = attr('data-endpoint').trim();
+  var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
+  var TITLE = attr('data-title') || 'Book a time';
+  var VIEW_TZ = attr('data-timezone');
+  // Theme overrides settable from the embed.
+  var THEME = {
+    '--rmssch-accent': attr('data-accent'),
+    '--rmssch-accent-contrast': attr('data-accent-contrast'),
+    '--rmssch-avail-dot': attr('data-dot')
+  };
 
   (function loadCss() {
     var href = script && script.getAttribute('data-css');
@@ -44,6 +57,8 @@
     var root = document.querySelector(MOUNT_SEL);
     if (!root) return;
     root.id = root.id || 'rms-scheduler';
+    // Apply embed theme overrides (persist on the container across re-renders).
+    for (var k in THEME) { if (THEME[k]) root.style.setProperty(k, THEME[k]); }
     if (!ENDPOINT) {
       root.innerHTML = '<p class="rmssch-msg rmssch-error">Scheduler not configured: missing data-endpoint.</p>';
       return;

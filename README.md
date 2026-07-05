@@ -80,7 +80,23 @@ paste `<your-exec-url>?action=availability` into a browser. You should see JSON 
 **Optional `<script>` attributes:** `data-mount` (CSS selector, default `#rms-scheduler`),
 `data-title`, `data-css` (override stylesheet URL), `data-timezone` (force a display
 timezone, e.g. `Europe/Lisbon`; by default each visitor sees slots in **their own**
-auto-detected timezone).
+auto-detected timezone), and theming — `data-accent`, `data-accent-contrast` (text on
+accent), `data-dot` (time-slot dot color).
+
+```html
+<script src=".../scheduler.js" data-endpoint="..."
+        data-accent="#ff5c00" data-accent-contrast="#ffffff"></script>
+```
+
+**Theming the Figma iframe (`embed.html`)** via URL query params —
+`accent`, `contrast`, `dot`, `title`, `tz` (URL-encode the `#` as `%23`):
+
+```
+https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00&contrast=%23ffffff
+```
+
+Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
+(`--rmssch-accent`, `--rmssch-accent-contrast`, `--rmssch-avail-dot`, …).
 
 **Re-theme** by overriding the CSS variables on the container:
 

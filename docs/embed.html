@@ -5,20 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Book a time</title>
   <style>
-    /* Force a fully transparent page so the iframe shows the Figma background
-       behind the widget card. color-scheme:normal stops browsers painting an
-       opaque default backdrop. */
+    /* Fully transparent page so the iframe shows the host background. */
     html, body { margin: 0; padding: 0; background: transparent !important; color-scheme: normal; }
-    /* Center the widget and let it use the full embed width up to its max. */
     body { display: flex; justify-content: center; padding: 8px; box-sizing: border-box; }
     #rms-scheduler { width: 100%; }
   </style>
 </head>
 <body>
   <div id="rms-scheduler"></div>
-  <script
-    src="scheduler.js"
-    data-endpoint="https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec"
-    data-title="Book a time with me"></script>
+  <script>
+    /* Build the widget script at runtime so the embed URL can theme it, e.g.
+       embed.html?accent=%23ff5c00&contrast=%23ffffff&title=Book%20a%20call
+       Supported query params: accent, contrast, dot, title, tz  */
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var s = document.createElement('script');
+      s.src = 'scheduler.js';
+      s.setAttribute('data-endpoint', 'https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec');
+      s.setAttribute('data-title', 'Book a time with me');
+      var map = { accent: 'data-accent', contrast: 'data-accent-contrast', dot: 'data-dot', title: 'data-title', tz: 'data-timezone' };
+      Object.keys(map).forEach(function (k) { var v = q.get(k); if (v) s.setAttribute(map[k], v); });
+      document.body.appendChild(s);
+    })();
+  </script>
 </body>
 </html>
