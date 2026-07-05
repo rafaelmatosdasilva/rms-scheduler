@@ -64,15 +64,18 @@
 .rmssch-day-dow { display: block; font-size: 0.7rem; color: var(--rmssch-muted); text-transform: uppercase; letter-spacing: .04em; }
 .rmssch-day-num { display: block; font-size: 1.05rem; font-weight: 650; }
 
-/* Time grid — scrolls internally so the card height stays constant when a
-   day has many slots. scrollbar-gutter avoids any layout shift. */
+/* Time grid — FIXED height so switching days (each with a different number of
+   slots) never reflows the card. Few slots leave empty space; many slots
+   scroll. scrollbar-gutter avoids any width shift. */
 .rmssch-times {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: min-content;
   gap: 8px;
-  max-height: 232px;
+  height: var(--rmssch-times-height, 232px);
   overflow-y: auto;
   scrollbar-gutter: stable;
+  align-content: start;
 }
 .rmssch-time {
   padding: 9px 6px;
