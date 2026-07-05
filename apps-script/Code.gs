@@ -23,6 +23,8 @@
 // Edit these to taste. Times are interpreted in the timeZone set in
 // appsscript.json (keep them in sync).
 var CONFIG = {
+  // Calendar that booked events are CREATED on. Busy/free is always checked
+  // across ALL calendars you own (see busyEvents_), regardless of this value.
   CALENDAR_ID: 'primary',        // 'primary' or a specific calendar id/email
   TIMEZONE: 'Europe/Lisbon',     // MUST match appsscript.json "timeZone"
   SLOT_MINUTES: 30,              // length of each bookable slot
@@ -93,7 +95,7 @@ function doPost(e) {
     var cal = getCalendar_();
 
     // Re-check the exact slot is still free (guards pick -> submit race).
-    if (isBusy_(cal, start, end)) {
+    if (isBusy_(start, end)) {
       return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just booked.' });
     }
 
@@ -121,7 +123,6 @@ function doPost(e) {
 // --------------------------- CORE LOGIC ----------------------------
 
 function computeAvailability_(days) {
-  var cal = getCalendar_();
   var now = new Date();
   var earliest = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000);
   var slots = [];
@@ -140,10 +141,9 @@ function computeAvailability_(days) {
     var close = atTime_(day, hours.end);
     if (!open || !close || close <= open) continue;
 
-    // Fetch the day's events once, then test each candidate slot against them.
-    var events = cal.getEvents(open, close).filter(function (ev) {
-      return ev.getMyStatus() !== CalendarApp.GuestStatus.NO; // ignore declined
-    });
+    // Fetch the day's events (across all your calendars) once, then test
+    // each candidate slot against them.
+    var events = busyEvents_(open, close);
 
     var cursor = new Date(open.getTime());
     while (cursor.getTime() + CONFIG.SLOT_MINUTES * 60000 <= close.getTime()) {
@@ -159,11 +159,26 @@ function computeAvailability_(days) {
   return slots;
 }
 
-function isBusy_(cal, start, end) {
-  var events = cal.getEvents(start, end).filter(function (ev) {
-    return ev.getMyStatus() !== CalendarApp.GuestStatus.NO;
-  });
-  return overlapsAny_(events, start, end);
+function isBusy_(start, end) {
+  return overlapsAny_(busyEvents_(start, end), start, end);
+}
+
+/**
+ * Events across ALL calendars you own within [start, end), excluding any you
+ * have declined. Owned-only so subscribed public calendars (e.g. holidays)
+ * don't wrongly block whole days. Calendar list is cached per execution.
+ */
+var _busyCalendars = null;
+function busyEvents_(start, end) {
+  if (!_busyCalendars) _busyCalendars = CalendarApp.getAllOwnedCalendars();
+  var out = [];
+  for (var i = 0; i < _busyCalendars.length; i++) {
+    var evs = _busyCalendars[i].getEvents(start, end);
+    for (var j = 0; j < evs.length; j++) {
+      if (evs[j].getMyStatus() !== CalendarApp.GuestStatus.NO) out.push(evs[j]);
+    }
+  }
+  return out;
 }
 
 function overlapsAny_(events, slotStart, slotEnd) {
