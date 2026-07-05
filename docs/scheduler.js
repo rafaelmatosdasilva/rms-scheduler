@@ -20,6 +20,9 @@
   var ENDPOINT = (script && script.getAttribute('data-endpoint') || '').trim();
   var MOUNT_SEL = (script && script.getAttribute('data-mount')) || '#rms-scheduler';
   var TITLE = (script && script.getAttribute('data-title')) || 'Book a time';
+  // Timezone slots are DISPLAYED in. Default: the visitor's own timezone
+  // (auto-detected by the browser). Override with data-timezone="Europe/Lisbon".
+  var VIEW_TZ = (script && script.getAttribute('data-timezone')) || '';
 
   // Load the stylesheet (sibling of this script unless overridden).
   (function loadCss() {
@@ -54,7 +57,10 @@
 
   function Widget(root) {
     this.root = root;
-    this.tz = null;
+    this.tz = null;        // owner timezone (from backend), for reference
+    // Timezone used for all display + day grouping: visitor's local zone,
+    // unless overridden via data-timezone.
+    this.viewTz = VIEW_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone) || undefined;
     this.byDay = {};        // 'YYYY-MM-DD' (owner tz) -> [{start,end}...]
     this.slotByStart = {};  // start ISO -> {start,end}
     this.dayKeys = [];
@@ -115,7 +121,7 @@
   // ---- date formatting in the OWNER's timezone -------------------
 
   Widget.prototype.parts = function (iso, opts) {
-    var o = Object.assign({ timeZone: this.tz }, opts);
+    var o = Object.assign({ timeZone: this.viewTz }, opts);
     return new Intl.DateTimeFormat(undefined, o).formatToParts(new Date(iso))
       .reduce(function (acc, p) { acc[p.type] = p.value; return acc; }, {});
   };
@@ -136,7 +142,7 @@
   };
   Widget.prototype.fullLabel = function (iso) {
     return new Intl.DateTimeFormat(undefined, {
-      timeZone: this.tz, weekday: 'long', month: 'long', day: 'numeric',
+      timeZone: this.viewTz, weekday: 'long', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit'
     }).format(new Date(iso));
   };
@@ -146,7 +152,7 @@
   Widget.prototype.el = function (html) {
     this.root.innerHTML =
       '<div class="rmssch-title">' + esc(TITLE) + '</div>' +
-      '<div class="rmssch-sub">' + (this.tz ? 'All times ' + esc(this.tz) : '&nbsp;') + '</div>' +
+      '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in your timezone · ' + esc(this.viewTz.replace(/_/g, ' ')) : '&nbsp;') + '</div>' +
       html;
   };
 

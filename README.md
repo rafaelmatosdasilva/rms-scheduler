@@ -78,7 +78,9 @@ paste `<your-exec-url>?action=availability` into a browser. You should see JSON 
 ```
 
 **Optional `<script>` attributes:** `data-mount` (CSS selector, default `#rms-scheduler`),
-`data-title`, `data-css` (override stylesheet URL).
+`data-title`, `data-css` (override stylesheet URL), `data-timezone` (force a display
+timezone, e.g. `Europe/Lisbon`; by default each visitor sees slots in **their own**
+auto-detected timezone).
 
 **Re-theme** by overriding the CSS variables on the container:
 
