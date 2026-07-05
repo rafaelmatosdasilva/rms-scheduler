@@ -323,7 +323,7 @@
         '<div class="rmssch-hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>' +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
-          '<button class="rmssch-btn rmssch-btn--ghost" type="button" data-back>Back</button>' +
+          '<button class="rmssch-back" type="button" data-back>Back</button>' +
           '<button class="rmssch-btn" type="submit">Confirm booking</button>' +
         '</div>' +
       '</form>');
