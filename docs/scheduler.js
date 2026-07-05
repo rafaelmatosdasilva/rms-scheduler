@@ -154,6 +154,7 @@
 
   Widget.prototype.card = function (inner) {
     // Simple centered states (loading / error / form / confirmation).
+    this.root.classList.add('rmssch-centered');
     this.frame(
       '<div class="rmssch-title">' + esc(TITLE) + '</div>' +
       '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in your timezone · ' + esc(this.viewTz.replace(/_/g, ' ')) : '&nbsp;') + '</div>' +
@@ -180,6 +181,7 @@
       this.card('<div class="rmssch-msg">No open times right now. Please check back later.</div>');
       return;
     }
+    this.root.classList.remove('rmssch-centered');
     this.frame(
       '<div class="rmssch-picker">' +
         this.calendarHtml() +
@@ -230,6 +232,9 @@
         cells += '<span class="rmssch-cell is-off">' + d + dot + '</span>';
       }
     }
+    // Pad to a constant 6 rows (42 cells) so the grid height never changes
+    // between months (5- vs 6-week months).
+    for (var t = offset + dim; t < 42; t++) cells += '<span class="rmssch-cell rmssch-cell--empty"></span>';
 
     var dows = DOW.map(function (n) { return '<span>' + n.toUpperCase() + '</span>'; }).join('');
     return '<div class="rmssch-cal">' +

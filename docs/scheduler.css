@@ -16,7 +16,10 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 720px;
-  min-height: 400px;
+  /* Constant height across every state — never resizes when switching views
+     or navigating months/days. Overflow is handled by inner scroll areas. */
+  height: var(--rmssch-height, 468px);
+  overflow: hidden;
   font-family: var(--rmssch-font);
   color: var(--rmssch-fg);
   background: var(--rmssch-bg);
@@ -25,7 +28,17 @@
   padding: 22px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
 }
+/* Short states sit vertically centered in the fixed-height card. */
+#rms-scheduler.rmssch-centered { justify-content: center; }
+
+/* Custom scrollbars (used by any inner scroll area). */
+.rmssch-slots, .rmssch-cal-grid { scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent; }
+.rmssch-slots::-webkit-scrollbar { width: 8px; }
+.rmssch-slots::-webkit-scrollbar-track { background: transparent; }
+.rmssch-slots::-webkit-scrollbar-thumb { background: var(--rmssch-border); border-radius: 8px; }
+.rmssch-slots::-webkit-scrollbar-thumb:hover { background: var(--rmssch-muted); }
 #rms-scheduler *,
 #rms-scheduler *::before,
 #rms-scheduler *::after { box-sizing: border-box; }
@@ -37,10 +50,10 @@
 .rmssch-narrow { width: 100%; max-width: 440px; margin: 0 auto; }
 
 /* ============================ PICKER ============================ */
-.rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; }
+.rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }
 
 /* -- month calendar -- */
-.rmssch-cal { flex: 1 1 58%; min-width: 0; }
+.rmssch-cal { flex: 1 1 58%; min-width: 0; display: flex; flex-direction: column; }
 .rmssch-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .rmssch-cal-title { font-size: 1.25rem; font-weight: 500; color: var(--rmssch-muted); }
 .rmssch-cal-title strong { color: var(--rmssch-fg); font-weight: 700; }
@@ -95,7 +108,7 @@
 
 .rmssch-slots {
   display: flex; flex-direction: column; gap: 10px;
-  max-height: 300px; overflow-y: auto; scrollbar-gutter: stable;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
   padding-right: 2px;
 }
 .rmssch-slot {
@@ -110,10 +123,10 @@
 
 /* -- stack on narrow embeds -- */
 @media (max-width: 640px) {
-  .rmssch-picker { flex-direction: column; gap: 18px; }
-  .rmssch-day { padding-left: 0; border-left: none; border-top: 1px solid var(--rmssch-border); padding-top: 18px; }
-  .rmssch-slots { max-height: 220px; }
-  #rms-scheduler { padding: 18px; }
+  #rms-scheduler { --rmssch-height: 620px; padding: 18px; }
+  .rmssch-picker { flex-direction: column; gap: 16px; }
+  .rmssch-cal { flex: 0 0 auto; }
+  .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; border-top: 1px solid var(--rmssch-border); padding-top: 16px; }
 }
 
 /* ============================ FORM ============================= */
