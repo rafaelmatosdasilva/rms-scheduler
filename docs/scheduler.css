@@ -1,172 +1,176 @@
 /* RMS Scheduler widget styles.
-   All rules are prefixed .rmssch- and driven by CSS variables so you can
-   re-theme without touching the markup. Override the variables on
-   #rms-scheduler in your own site's CSS. */
+   Prefixed .rmssch-* and driven by CSS variables — override them on
+   #rms-scheduler in your own CSS to re-theme. */
 
 #rms-scheduler {
-  --rmssch-accent: #2b59ff;
-  --rmssch-accent-contrast: #ffffff;
+  --rmssch-accent: #f4e04d;          /* selection / primary */
+  --rmssch-accent-contrast: #16181d; /* text on accent */
   --rmssch-bg: #ffffff;
+  --rmssch-surface: #f3f4f6;         /* day cells / pills */
   --rmssch-fg: #1a1c20;
   --rmssch-muted: #6b7280;
   --rmssch-border: #e4e7ec;
-  --rmssch-radius: 12px;
+  --rmssch-radius: 16px;
   --rmssch-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
-  max-width: 460px;
+  width: 100%;
+  max-width: 720px;
+  min-height: 400px;
   font-family: var(--rmssch-font);
   color: var(--rmssch-fg);
   background: var(--rmssch-bg);
   border: 1px solid var(--rmssch-border);
   border-radius: var(--rmssch-radius);
-  padding: 20px;
-  /* Keep a constant height across every state (loading / picker / form /
-     confirmation / error) so the card never resizes or jumps. */
-  min-height: var(--rmssch-min-height, 440px);
+  padding: 22px;
   display: flex;
   flex-direction: column;
 }
 #rms-scheduler *,
 #rms-scheduler *::before,
 #rms-scheduler *::after { box-sizing: border-box; }
+#rms-scheduler button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
 
-.rmssch-title { font-size: 1.1rem; font-weight: 650; margin: 0 0 2px; }
+/* Simple states (loading / error / form / confirmation) */
+.rmssch-title { font-size: 1.15rem; font-weight: 650; margin: 0 0 2px; }
 .rmssch-sub { font-size: 0.82rem; color: var(--rmssch-muted); margin: 0 0 16px; }
+.rmssch-narrow { width: 100%; max-width: 440px; margin: 0 auto; }
 
-/* Day strip */
-.rmssch-days {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 14px;
-  scrollbar-width: thin;
+/* ============================ PICKER ============================ */
+.rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; }
+
+/* -- month calendar -- */
+.rmssch-cal { flex: 1 1 58%; min-width: 0; }
+.rmssch-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.rmssch-cal-title { font-size: 1.25rem; font-weight: 500; color: var(--rmssch-muted); }
+.rmssch-cal-title strong { color: var(--rmssch-fg); font-weight: 700; }
+.rmssch-cal-nav { display: flex; gap: 6px; }
+.rmssch-cal-nav button {
+  width: 32px; height: 32px; border-radius: 8px; font-size: 1.1rem; line-height: 1;
+  color: var(--rmssch-muted); border: 1px solid transparent;
 }
+.rmssch-cal-nav button:hover:not(:disabled) { border-color: var(--rmssch-border); color: var(--rmssch-fg); }
+.rmssch-cal-nav button:disabled { opacity: 0.3; cursor: default; }
+
+.rmssch-cal-dows {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  font-size: 0.66rem; letter-spacing: 0.04em; color: var(--rmssch-muted);
+  text-align: center; margin-bottom: 8px;
+}
+.rmssch-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.rmssch-cell {
+  position: relative; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem; font-weight: 550;
+}
+.rmssch-cell--empty { background: none; }
+.rmssch-cell.is-off { color: var(--rmssch-muted); opacity: 0.55; }
+.rmssch-cell.is-avail { background: var(--rmssch-surface); color: var(--rmssch-fg); }
+.rmssch-cell.is-avail:hover { outline: 2px solid var(--rmssch-accent); outline-offset: -2px; }
+.rmssch-cell.is-sel { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
+.rmssch-cell-dot {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--rmssch-accent);
+}
+.rmssch-cell.is-sel .rmssch-cell-dot { background: var(--rmssch-accent-contrast); }
+
+/* -- day / time panel -- */
 .rmssch-day {
-  flex: 0 0 auto;
-  min-width: 62px;
-  padding: 8px 10px;
-  border: 1px solid var(--rmssch-border);
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  text-align: center;
-  line-height: 1.2;
-  font: inherit;
+  flex: 1 1 42%; min-width: 210px; display: flex; flex-direction: column;
+  padding-left: 22px; border-left: 1px solid var(--rmssch-border);
 }
-.rmssch-day:hover { border-color: var(--rmssch-accent); }
-.rmssch-day[aria-selected="true"] {
-  border-color: var(--rmssch-accent);
-  background: color-mix(in srgb, var(--rmssch-accent) 10%, transparent);
-}
-.rmssch-day-dow { display: block; font-size: 0.7rem; color: var(--rmssch-muted); text-transform: uppercase; letter-spacing: .04em; }
-.rmssch-day-num { display: block; font-size: 1.05rem; font-weight: 650; }
+.rmssch-day-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.rmssch-day-title { font-size: 1.15rem; color: var(--rmssch-muted); }
+.rmssch-day-title strong { color: var(--rmssch-fg); font-weight: 700; }
 
-/* Time grid — FIXED height so switching days (each with a different number of
-   slots) never reflows the card. Few slots leave empty space; many slots
-   scroll. scrollbar-gutter avoids any width shift. */
-.rmssch-times {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: min-content;
-  gap: 8px;
-  height: var(--rmssch-times-height, 232px);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  align-content: start;
+.rmssch-seg {
+  display: inline-flex; background: var(--rmssch-surface);
+  border-radius: 9px; padding: 3px;
 }
-.rmssch-time {
-  padding: 9px 6px;
-  border: 1px solid var(--rmssch-border);
-  border-radius: 9px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.9rem;
-  text-align: center;
+.rmssch-seg button {
+  font-size: 0.78rem; font-weight: 600; padding: 4px 12px; border-radius: 7px;
+  color: var(--rmssch-muted);
 }
-.rmssch-time:hover { border-color: var(--rmssch-accent); color: var(--rmssch-accent); }
-.rmssch-time-dur { display: block; font-size: 0.68rem; color: var(--rmssch-muted); margin-top: 2px; }
+.rmssch-seg button.is-on { background: var(--rmssch-bg); color: var(--rmssch-fg); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
 
-/* Form */
+.rmssch-slots {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 300px; overflow-y: auto; scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+.rmssch-slot {
+  width: 100%; padding: 12px; border-radius: 10px;
+  border: 1px solid var(--rmssch-border); background: transparent;
+  text-align: center; line-height: 1.15;
+}
+.rmssch-slot:hover { border-color: var(--rmssch-accent); }
+.rmssch-slot-time { font-size: 0.95rem; font-weight: 600; }
+.rmssch-slot-dur { display: block; font-size: 0.68rem; color: var(--rmssch-muted); margin-top: 2px; }
+.rmssch-tz { margin-top: 12px; font-size: 0.7rem; color: var(--rmssch-muted); }
+
+/* -- stack on narrow embeds -- */
+@media (max-width: 640px) {
+  .rmssch-picker { flex-direction: column; gap: 18px; }
+  .rmssch-day { padding-left: 0; border-left: none; border-top: 1px solid var(--rmssch-border); padding-top: 18px; }
+  .rmssch-slots { max-height: 220px; }
+  #rms-scheduler { padding: 18px; }
+}
+
+/* ============================ FORM ============================= */
 .rmssch-selected {
   font-size: 0.9rem;
-  background: color-mix(in srgb, var(--rmssch-accent) 8%, transparent);
-  border: 1px solid var(--rmssch-border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 14px;
+  background: color-mix(in srgb, var(--rmssch-accent) 14%, transparent);
+  border: 1px solid var(--rmssch-border); border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 14px;
 }
 .rmssch-field { margin-bottom: 12px; }
 .rmssch-field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
 .rmssch-field input,
 .rmssch-field textarea {
-  width: 100%;
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 9px 11px;
-  border: 1px solid var(--rmssch-border);
-  border-radius: 9px;
-  background: var(--rmssch-bg);
-  color: inherit;
+  width: 100%; font: inherit; font-size: 0.9rem; padding: 9px 11px;
+  border: 1px solid var(--rmssch-border); border-radius: 9px;
+  background: var(--rmssch-bg); color: inherit;
 }
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
 
-/* Honeypot — hidden from humans, visible to naive bots */
-.rmssch-hp {
-  position: absolute !important;
-  left: -9999px !important;
-  width: 1px; height: 1px;
-  overflow: hidden;
-}
+.rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
 
-/* Buttons */
 .rmssch-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
 .rmssch-btn {
-  font: inherit;
-  font-weight: 600;
-  padding: 10px 16px;
-  border-radius: 9px;
-  border: 1px solid var(--rmssch-accent);
-  background: var(--rmssch-accent);
+  font-weight: 600; padding: 10px 16px; border-radius: 9px;
+  border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast);
-  cursor: pointer;
 }
 .rmssch-btn:disabled { opacity: 0.6; cursor: default; }
 .rmssch-btn--ghost { background: transparent; color: var(--rmssch-fg); border-color: var(--rmssch-border); }
 
-/* States */
+/* ============================ STATES =========================== */
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
 .rmssch-error { color: #b42318; }
 .rmssch-confirm { text-align: center; padding: 8px 0; }
 .rmssch-confirm-check {
   width: 44px; height: 44px; border-radius: 50%;
-  background: color-mix(in srgb, var(--rmssch-accent) 15%, transparent);
-  color: var(--rmssch-accent);
-  display: inline-flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--rmssch-accent) 22%, transparent);
+  color: var(--rmssch-accent-contrast); display: inline-flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 10px;
 }
 .rmssch-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid var(--rmssch-border);
-  border-top-color: var(--rmssch-accent);
-  border-radius: 50%;
-  display: inline-block;
-  animation: rmssch-spin 0.7s linear infinite;
-  vertical-align: middle;
+  width: 18px; height: 18px; border: 2px solid var(--rmssch-border);
+  border-top-color: var(--rmssch-accent); border-radius: 50%;
+  display: inline-block; animation: rmssch-spin 0.7s linear infinite; vertical-align: middle;
 }
 @keyframes rmssch-spin { to { transform: rotate(360deg); } }
 
+/* ============================ DARK ============================= */
 @media (prefers-color-scheme: dark) {
   #rms-scheduler {
     --rmssch-bg: #16181d;
+    --rmssch-surface: #23262e;
     --rmssch-fg: #f2f4f7;
     --rmssch-muted: #98a2b3;
     --rmssch-border: #2a2e37;
   }
+  .rmssch-error { color: #ff9a8a; }
 }
