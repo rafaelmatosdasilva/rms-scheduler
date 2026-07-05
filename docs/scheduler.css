@@ -21,6 +21,11 @@
   border: 1px solid var(--rmssch-border);
   border-radius: var(--rmssch-radius);
   padding: 20px;
+  /* Keep a constant height across every state (loading / picker / form /
+     confirmation / error) so the card never resizes or jumps. */
+  min-height: var(--rmssch-min-height, 440px);
+  display: flex;
+  flex-direction: column;
 }
 #rms-scheduler *,
 #rms-scheduler *::before,
@@ -59,11 +64,15 @@
 .rmssch-day-dow { display: block; font-size: 0.7rem; color: var(--rmssch-muted); text-transform: uppercase; letter-spacing: .04em; }
 .rmssch-day-num { display: block; font-size: 1.05rem; font-weight: 650; }
 
-/* Time grid */
+/* Time grid — scrolls internally so the card height stays constant when a
+   day has many slots. scrollbar-gutter avoids any layout shift. */
 .rmssch-times {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  max-height: 232px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 .rmssch-time {
   padding: 9px 6px;

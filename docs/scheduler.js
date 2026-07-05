@@ -91,9 +91,10 @@
         if (timer) clearTimeout(timer);
         try { console.error('[rms-scheduler] availability request failed:', err); } catch (_) {}
         var aborted = err && err.name === 'AbortError';
+        var detail = err ? ((err.name || 'Error') + ': ' + (err.message || String(err))) : '';
         self.renderError(aborted
-          ? 'Timed out loading times. Tap retry.'
-          : 'Could not load available times. Please try again shortly.');
+          ? 'Timed out loading times (20s). Tap retry.'
+          : 'Could not load available times.', detail);
       });
   };
 
@@ -168,9 +169,10 @@
     this.el('<div class="rmssch-msg"><span class="rmssch-spinner"></span> Loading available times…</div>');
   };
 
-  Widget.prototype.renderError = function (msg) {
+  Widget.prototype.renderError = function (msg, detail) {
     var self = this;
     this.el('<div class="rmssch-msg rmssch-error">' + esc(msg) + '</div>' +
+      (detail ? '<div class="rmssch-msg" style="font-size:0.72rem;opacity:0.7">' + esc(detail) + '</div>' : '') +
       '<div class="rmssch-actions"><button class="rmssch-btn" type="button">Retry</button></div>');
     this.root.querySelector('button').onclick = function () { self.start(); };
   };
