@@ -327,6 +327,9 @@
           '<button class="rmssch-btn" type="submit">Confirm booking</button>' +
         '</div>' +
       '</form>');
+    // Top-align the form (match the calendar's top/bottom padding) rather than
+    // vertically centering it.
+    this.root.classList.remove('rmssch-centered');
     this.root.querySelector('[data-back]').onclick = function () { self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
   };

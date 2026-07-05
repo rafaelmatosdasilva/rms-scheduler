@@ -148,7 +148,7 @@
   padding: 10px 12px; margin-bottom: 14px;
 }
 .rmssch-field { margin-bottom: 12px; }
-.rmssch-field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
+.rmssch-field label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; }
 .rmssch-field input,
 .rmssch-field textarea {
   width: 100%; font: inherit; font-size: 0.9rem; padding: 9px 11px;
