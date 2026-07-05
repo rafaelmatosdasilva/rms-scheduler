@@ -5,35 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Book a time</title>
   <style>
-    /* Fully transparent page so the iframe shows the host background. */
-    html, body { margin: 0; padding: 0; background: transparent !important; color-scheme: normal; }
+    html, body { margin: 0; padding: 0; background: transparent !important; }
     body { display: flex; justify-content: center; padding: 8px; box-sizing: border-box; }
     #rms-scheduler { width: 100%; }
   </style>
 </head>
 <body>
   <div id="rms-scheduler"></div>
+
+  <!-- Static tag: reliably runs inside sandboxed iframes (e.g. Figma Sites). -->
+  <script
+    src="scheduler.js"
+    data-endpoint="https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec"
+    data-title="Book a time with me"></script>
+
+  <!-- Theme from URL query params, e.g.
+       embed.html?accent=%23f4e04d&bg=transparent&fg=%23ffffff
+       params: accent, contrast, dot, bg, surface, fg, muted, border -->
   <script>
-    /* Build the widget script at runtime so the embed URL can theme it, e.g.
-       embed.html?accent=%23ff5c00&contrast=%23ffffff&title=Book%20a%20call
-       Supported query params: accent, contrast, dot, title, tz  */
     (function () {
+      var el = document.getElementById('rms-scheduler');
       var q = new URLSearchParams(location.search);
-      var s = document.createElement('script');
-      s.src = 'scheduler.js';
-      s.setAttribute('data-endpoint', 'https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec');
-      s.setAttribute('data-title', 'Book a time with me');
-      // Transparent card by default so the widget blends into the host page.
-      // Tiles/text still use surface/fg tokens (adapt to light/dark). Override
-      // with ?bg=… if you want an opaque card.
-      s.setAttribute('data-bg', 'transparent');
       var map = {
-        accent: 'data-accent', contrast: 'data-accent-contrast', dot: 'data-dot',
-        title: 'data-title', tz: 'data-timezone',
-        bg: 'data-bg', surface: 'data-surface', fg: 'data-fg', muted: 'data-muted', border: 'data-border'
+        accent: '--rmssch-accent', contrast: '--rmssch-accent-contrast', dot: '--rmssch-avail-dot',
+        bg: '--rmssch-bg', surface: '--rmssch-surface', fg: '--rmssch-fg',
+        muted: '--rmssch-muted', border: '--rmssch-border'
       };
-      Object.keys(map).forEach(function (k) { var v = q.get(k); if (v) s.setAttribute(map[k], v); });
-      document.body.appendChild(s);
+      // Transparent card by default so the widget blends into the host page.
+      el.style.setProperty('--rmssch-bg', q.get('bg') || 'transparent');
+      Object.keys(map).forEach(function (k) {
+        if (k === 'bg') return;
+        var v = q.get(k); if (v) el.style.setProperty(map[k], v);
+      });
     })();
   </script>
 </body>

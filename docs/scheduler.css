@@ -7,7 +7,7 @@
   --rmssch-accent-contrast: #16181d; /* text on accent */
   --rmssch-avail-dot: #22c55e;       /* green dot on time slots */
   --rmssch-bg: #ffffff;
-  --rmssch-surface: #f3f4f6;         /* day cells / pills */
+  --rmssch-surface: #eaecef;         /* day cells / pills — steps off the bg */
   --rmssch-fg: #1a1c20;
   --rmssch-muted: #6b7280;
   --rmssch-border: #e4e7ec;
@@ -187,7 +187,7 @@
 @media (prefers-color-scheme: dark) {
   #rms-scheduler {
     --rmssch-bg: #16181d;
-    --rmssch-surface: #23262e;
+    --rmssch-surface: #2d333e;   /* clearly lighter than the bg so tiles pop */
     --rmssch-fg: #f2f4f7;
     --rmssch-muted: #98a2b3;
     --rmssch-border: #2a2e37;
