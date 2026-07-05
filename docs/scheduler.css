@@ -43,7 +43,9 @@
 #rms-scheduler *,
 #rms-scheduler *::before,
 #rms-scheduler *::after { box-sizing: border-box; }
-#rms-scheduler button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+/* :where() keeps this reset at zero specificity so the styled button rules
+   below (.rmssch-btn, .rmssch-slot, .rmssch-cell…) always win. */
+:where(#rms-scheduler) button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
 
 /* Simple states (loading / error / form / confirmation) */
 .rmssch-title { font-size: 1.15rem; font-weight: 650; margin: 0 0 2px; }
@@ -157,7 +159,7 @@
 
 .rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
 
-.rmssch-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
   font-weight: 600; padding: 10px 16px; border-radius: 9px;
   border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
