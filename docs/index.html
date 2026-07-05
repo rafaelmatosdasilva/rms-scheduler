@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RMS Scheduler — demo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      max-width: 720px; margin: 0 auto; padding: 48px 20px; line-height: 1.55;
+      color: #1a1c20;
+    }
+    h1 { margin: 0 0 4px; }
+    .lede { color: #6b7280; margin-top: 0; }
+    pre {
+      background: #f4f5f7; border: 1px solid #e4e7ec; border-radius: 10px;
+      padding: 14px 16px; overflow-x: auto; font-size: 0.85rem;
+    }
+    hr { border: 0; border-top: 1px solid #e4e7ec; margin: 40px 0; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f1115; color: #f2f4f7; }
+      pre { background: #16181d; border-color: #2a2e37; }
+      .lede { color: #98a2b3; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Booking widget</h1>
+  <p class="lede">Live demo of the embeddable scheduler. Pick a slot below to book a real event.</p>
+
+  <!-- ==== THE WIDGET ==== -->
+  <div id="rms-scheduler"></div>
+  <script
+    src="scheduler.js"
+    data-endpoint="PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE"
+    data-title="Book a time with me"></script>
+  <!-- ==================== -->
+
+  <hr>
+
+  <h2>Embed it on your site</h2>
+  <p>Copy this snippet anywhere in your page. Replace the endpoint with your deployed Apps Script URL.</p>
+  <pre>&lt;div id="rms-scheduler"&gt;&lt;/div&gt;
+&lt;script
+  src="https://YOUR-USERNAME.github.io/rms-scheduler/scheduler.js"
+  data-endpoint="https://script.google.com/macros/s/XXXX/exec"
+  data-title="Book a time with me"&gt;&lt;/script&gt;</pre>
+
+  <p>Re-theme by overriding the CSS variables:</p>
+  <pre>#rms-scheduler {
+  --rmssch-accent: #e5484d;
+  --rmssch-radius: 16px;
+}</pre>
+</body>
+</html>

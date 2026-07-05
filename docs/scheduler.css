@@ -1,0 +1,159 @@
+/* RMS Scheduler widget styles.
+   All rules are prefixed .rmssch- and driven by CSS variables so you can
+   re-theme without touching the markup. Override the variables on
+   #rms-scheduler in your own site's CSS. */
+
+#rms-scheduler {
+  --rmssch-accent: #2b59ff;
+  --rmssch-accent-contrast: #ffffff;
+  --rmssch-bg: #ffffff;
+  --rmssch-fg: #1a1c20;
+  --rmssch-muted: #6b7280;
+  --rmssch-border: #e4e7ec;
+  --rmssch-radius: 12px;
+  --rmssch-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  box-sizing: border-box;
+  max-width: 460px;
+  font-family: var(--rmssch-font);
+  color: var(--rmssch-fg);
+  background: var(--rmssch-bg);
+  border: 1px solid var(--rmssch-border);
+  border-radius: var(--rmssch-radius);
+  padding: 20px;
+}
+#rms-scheduler *,
+#rms-scheduler *::before,
+#rms-scheduler *::after { box-sizing: border-box; }
+
+.rmssch-title { font-size: 1.1rem; font-weight: 650; margin: 0 0 2px; }
+.rmssch-sub { font-size: 0.82rem; color: var(--rmssch-muted); margin: 0 0 16px; }
+
+/* Day strip */
+.rmssch-days {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: thin;
+}
+.rmssch-day {
+  flex: 0 0 auto;
+  min-width: 62px;
+  padding: 8px 10px;
+  border: 1px solid var(--rmssch-border);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+  font: inherit;
+}
+.rmssch-day:hover { border-color: var(--rmssch-accent); }
+.rmssch-day[aria-selected="true"] {
+  border-color: var(--rmssch-accent);
+  background: color-mix(in srgb, var(--rmssch-accent) 10%, transparent);
+}
+.rmssch-day-dow { display: block; font-size: 0.7rem; color: var(--rmssch-muted); text-transform: uppercase; letter-spacing: .04em; }
+.rmssch-day-num { display: block; font-size: 1.05rem; font-weight: 650; }
+
+/* Time grid */
+.rmssch-times {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.rmssch-time {
+  padding: 9px 6px;
+  border: 1px solid var(--rmssch-border);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.rmssch-time:hover { border-color: var(--rmssch-accent); color: var(--rmssch-accent); }
+
+/* Form */
+.rmssch-selected {
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--rmssch-accent) 8%, transparent);
+  border: 1px solid var(--rmssch-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.rmssch-field { margin-bottom: 12px; }
+.rmssch-field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
+.rmssch-field input,
+.rmssch-field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 9px 11px;
+  border: 1px solid var(--rmssch-border);
+  border-radius: 9px;
+  background: var(--rmssch-bg);
+  color: inherit;
+}
+.rmssch-field input:focus,
+.rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
+.rmssch-field textarea { resize: vertical; min-height: 64px; }
+
+/* Honeypot — hidden from humans, visible to naive bots */
+.rmssch-hp {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+}
+
+/* Buttons */
+.rmssch-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.rmssch-btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--rmssch-accent);
+  background: var(--rmssch-accent);
+  color: var(--rmssch-accent-contrast);
+  cursor: pointer;
+}
+.rmssch-btn:disabled { opacity: 0.6; cursor: default; }
+.rmssch-btn--ghost { background: transparent; color: var(--rmssch-fg); border-color: var(--rmssch-border); }
+
+/* States */
+.rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
+.rmssch-error { color: #b42318; }
+.rmssch-confirm { text-align: center; padding: 8px 0; }
+.rmssch-confirm-check {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: color-mix(in srgb, var(--rmssch-accent) 15%, transparent);
+  color: var(--rmssch-accent);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 10px;
+}
+.rmssch-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--rmssch-border);
+  border-top-color: var(--rmssch-accent);
+  border-radius: 50%;
+  display: inline-block;
+  animation: rmssch-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes rmssch-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-color-scheme: dark) {
+  #rms-scheduler {
+    --rmssch-bg: #16181d;
+    --rmssch-fg: #f2f4f7;
+    --rmssch-muted: #98a2b3;
+    --rmssch-border: #2a2e37;
+  }
+}
