@@ -259,6 +259,7 @@
     var slots = this.byDay[this.selectedDay].map(function (slot) {
       var dur = self.durationLabel(slot);
       return '<button type="button" class="rmssch-slot" data-slot="' + esc(slot.start) + '">' +
+        '<span class="rmssch-slot-dot"></span>' +
         '<span class="rmssch-slot-time">' + esc(self.timeLabel(slot.start)) + '</span>' +
         (dur ? '<span class="rmssch-slot-dur">' + esc(dur) + '</span>' : '') +
       '</button>';

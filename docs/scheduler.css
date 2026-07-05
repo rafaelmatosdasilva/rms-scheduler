@@ -5,6 +5,7 @@
 #rms-scheduler {
   --rmssch-accent: #f4e04d;          /* selection / primary */
   --rmssch-accent-contrast: #16181d; /* text on accent */
+  --rmssch-avail-dot: #22c55e;       /* green dot on time slots */
   --rmssch-bg: #ffffff;
   --rmssch-surface: #f3f4f6;         /* day cells / pills */
   --rmssch-fg: #1a1c20;
@@ -112,11 +113,16 @@
   padding-right: 2px;
 }
 .rmssch-slot {
-  width: 100%; padding: 12px; border-radius: 10px;
+  position: relative; width: 100%; padding: 12px; border-radius: 10px;
   border: 1px solid var(--rmssch-border); background: transparent;
   text-align: center; line-height: 1.15;
 }
 .rmssch-slot:hover { border-color: var(--rmssch-accent); }
+.rmssch-slot-dot {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--rmssch-avail-dot, #22c55e);
+}
 .rmssch-slot-time { font-size: 0.95rem; font-weight: 600; }
 .rmssch-slot-dur { display: block; font-size: 0.68rem; color: var(--rmssch-muted); margin-top: 2px; }
 .rmssch-tz { margin-top: 12px; font-size: 0.7rem; color: var(--rmssch-muted); }
