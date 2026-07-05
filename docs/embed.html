@@ -23,7 +23,15 @@
       s.src = 'scheduler.js';
       s.setAttribute('data-endpoint', 'https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec');
       s.setAttribute('data-title', 'Book a time with me');
-      var map = { accent: 'data-accent', contrast: 'data-accent-contrast', dot: 'data-dot', title: 'data-title', tz: 'data-timezone' };
+      // Transparent card by default so the widget blends into the host page.
+      // Tiles/text still use surface/fg tokens (adapt to light/dark). Override
+      // with ?bg=… if you want an opaque card.
+      s.setAttribute('data-bg', 'transparent');
+      var map = {
+        accent: 'data-accent', contrast: 'data-accent-contrast', dot: 'data-dot',
+        title: 'data-title', tz: 'data-timezone',
+        bg: 'data-bg', surface: 'data-surface', fg: 'data-fg', muted: 'data-muted', border: 'data-border'
+      };
       Object.keys(map).forEach(function (k) { var v = q.get(k); if (v) s.setAttribute(map[k], v); });
       document.body.appendChild(s);
     })();

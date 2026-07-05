@@ -29,11 +29,16 @@
   var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
   var TITLE = attr('data-title') || 'Book a time';
   var VIEW_TZ = attr('data-timezone');
-  // Theme overrides settable from the embed.
+  // Theme overrides settable from the embed (data-* attributes).
   var THEME = {
     '--rmssch-accent': attr('data-accent'),
     '--rmssch-accent-contrast': attr('data-accent-contrast'),
-    '--rmssch-avail-dot': attr('data-dot')
+    '--rmssch-avail-dot': attr('data-dot'),
+    '--rmssch-bg': attr('data-bg'),
+    '--rmssch-surface': attr('data-surface'),
+    '--rmssch-fg': attr('data-fg'),
+    '--rmssch-muted': attr('data-muted'),
+    '--rmssch-border': attr('data-border')
   };
 
   (function loadCss() {
