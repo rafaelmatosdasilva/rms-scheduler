@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Book a time</title>
   <style>
-    html, body { margin: 0; padding: 0; background: transparent; }
+    /* Force a fully transparent page so the iframe shows the Figma background
+       behind the widget card. color-scheme:normal stops browsers painting an
+       opaque default backdrop. */
+    html, body { margin: 0; padding: 0; background: transparent !important; color-scheme: normal; }
     /* Center the widget and let it use the full embed width up to its max. */
     body { display: flex; justify-content: center; padding: 8px; box-sizing: border-box; }
     #rms-scheduler { width: 100%; }
