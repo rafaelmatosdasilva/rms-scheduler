@@ -29,7 +29,16 @@
   var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
   var TITLE = attr('data-title') || 'Book a time';
   var VIEW_TZ = attr('data-timezone');
-  // Theme overrides settable from the embed (data-* attributes).
+  // Forced palette (independent of the viewer's OS light/dark), settable via
+  // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
+  // controlled separately (solid or transparent).
+  var PALETTES = {
+    dark: { '--rmssch-surface': '#2d333e', '--rmssch-fg': '#f2f4f7', '--rmssch-muted': '#98a2b3', '--rmssch-border': '#2a2e37' },
+    light: { '--rmssch-surface': '#eaecef', '--rmssch-fg': '#1a1c20', '--rmssch-muted': '#6b7280', '--rmssch-border': '#e4e7ec' }
+  };
+  var THEME_NAME = attr('data-theme');
+
+  // Individual theme overrides settable from the embed (data-* attributes).
   var THEME = {
     '--rmssch-accent': attr('data-accent'),
     '--rmssch-accent-contrast': attr('data-accent-contrast'),
@@ -62,7 +71,10 @@
     var root = document.querySelector(MOUNT_SEL);
     if (!root) return;
     root.id = root.id || 'rms-scheduler';
-    // Apply embed theme overrides (persist on the container across re-renders).
+    // Apply forced palette first, then individual overrides (persist on the
+    // container across re-renders).
+    var pal = PALETTES[THEME_NAME];
+    if (pal) for (var p in pal) root.style.setProperty(p, pal[p]);
     for (var k in THEME) { if (THEME[k]) root.style.setProperty(k, THEME[k]); }
     if (!ENDPOINT) {
       root.innerHTML = '<p class="rmssch-msg rmssch-error">Scheduler not configured: missing data-endpoint.</p>';

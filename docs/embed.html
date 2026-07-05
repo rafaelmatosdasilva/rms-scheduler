@@ -19,24 +19,29 @@
     data-endpoint="https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec"
     data-title="Book a time with me"></script>
 
-  <!-- Theme from URL query params, e.g.
-       embed.html?accent=%23f4e04d&bg=transparent&fg=%23ffffff
-       params: accent, contrast, dot, bg, surface, fg, muted, border -->
+  <!-- Theme from URL query params. Defaults to a solid DARK card so text is
+       always legible regardless of the viewer's OS mode. Examples:
+         ?theme=light                 (light card)
+         ?bg=transparent              (see-through — use over a dark section)
+         ?accent=%23ff5c00            (custom accent; %23 = #)
+       params: theme, bg, accent, contrast, dot, surface, fg, muted, border -->
   <script>
     (function () {
       var el = document.getElementById('rms-scheduler');
       var q = new URLSearchParams(location.search);
-      var map = {
-        accent: '--rmssch-accent', contrast: '--rmssch-accent-contrast', dot: '--rmssch-avail-dot',
-        bg: '--rmssch-bg', surface: '--rmssch-surface', fg: '--rmssch-fg',
-        muted: '--rmssch-muted', border: '--rmssch-border'
+      var PAL = {
+        dark:  { '--rmssch-surface': '#2d333e', '--rmssch-fg': '#f2f4f7', '--rmssch-muted': '#98a2b3', '--rmssch-border': '#2a2e37' },
+        light: { '--rmssch-surface': '#eaecef', '--rmssch-fg': '#1a1c20', '--rmssch-muted': '#6b7280', '--rmssch-border': '#e4e7ec' }
       };
-      // Transparent card by default so the widget blends into the host page.
-      el.style.setProperty('--rmssch-bg', q.get('bg') || 'transparent');
-      Object.keys(map).forEach(function (k) {
-        if (k === 'bg') return;
-        var v = q.get(k); if (v) el.style.setProperty(map[k], v);
-      });
+      var theme = (q.get('theme') === 'light') ? 'light' : 'dark';
+      var pal = PAL[theme];
+      for (var p in pal) el.style.setProperty(p, pal[p]);
+      el.style.setProperty('--rmssch-bg', q.get('bg') || (theme === 'dark' ? '#16181d' : '#ffffff'));
+      var tokens = {
+        accent: '--rmssch-accent', contrast: '--rmssch-accent-contrast', dot: '--rmssch-avail-dot',
+        surface: '--rmssch-surface', fg: '--rmssch-fg', muted: '--rmssch-muted', border: '--rmssch-border'
+      };
+      Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], v); });
     })();
   </script>
 </body>
