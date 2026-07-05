@@ -4,6 +4,14 @@ A tiny, embeddable booking widget for your website. Visitors pick an open time
 slot and a real event is created on **your** Google Calendar — with a fully
 custom UI you control.
 
+**How availability works:** you keep a dedicated **Availability calendar** and drop
+an event on it wherever you're free to take a call. **Each event = one bookable
+slot, and its length is the call length** — draw a 30-min event for a 30-min call,
+a 45-min one for 45. When a visitor books, the appointment (with their invite) is
+written to your **Booking calendar** and the availability event is consumed so it
+can't be booked twice. Slots also auto-hide if anything on your *other* calendars
+conflicts, so you can't be double-booked.
+
 - **Frontend:** one plain HTML/JS snippet (`docs/scheduler.js` + `scheduler.css`), hosted free on **GitHub Pages**.
 - **Backend:** a free **Google Apps Script** web app (`apps-script/Code.gs`) that runs *as you* via `CalendarApp` — **no paid host, no service account, no stored credentials.**
 
@@ -24,10 +32,14 @@ GitHub Pages (static)                 Google (free, runs as you)
 2. Open **Project Settings** (gear) → tick **“Show `appsscript.json` manifest file in editor.”**
 3. Replace the contents of `Code.gs` with [`apps-script/Code.gs`](apps-script/Code.gs), and
    `appsscript.json` with [`apps-script/appsscript.json`](apps-script/appsscript.json).
-4. Edit the `CONFIG` block at the top of `Code.gs`:
-   - `CALENDAR_ID` — `'primary'` for your main calendar, or a specific calendar id.
+4. Create a dedicated **Availability** calendar (Google Calendar → *Other calendars*
+   → **＋ → Create new calendar**), then open its **Settings → Integrate calendar**
+   and copy its **Calendar ID**.
+5. Edit the `CONFIG` block at the top of `Code.gs`:
+   - `AVAILABILITY_CALENDAR_ID` — the Calendar ID from the step above (where you mark slots).
+   - `BOOKING_CALENDAR_ID` — `'primary'` for your main calendar, or a specific calendar id.
    - `TIMEZONE` — your IANA zone (**must match** `timeZone` in `appsscript.json`).
-   - `SLOT_MINUTES`, `BUFFER_MINUTES`, `LOOKAHEAD_DAYS`, `MIN_NOTICE_MINUTES`, `BUSINESS_HOURS`.
+   - `LOOKAHEAD_DAYS`, `MIN_NOTICE_MINUTES`, `BUFFER_MINUTES`, `CONSUME_SLOT`.
 5. **Deploy → New deployment → Web app**:
    - **Execute as:** `Me`
    - **Who has access:** `Anyone`
@@ -36,8 +48,9 @@ GitHub Pages (static)                 Google (free, runs as you)
    > *Advanced → Go to (project)* to continue. It only ever touches your calendar.
 6. Copy the **Web app URL** (ends in `/exec`).
 
-**Test the backend directly:** paste `<your-exec-url>?action=availability` into a browser.
-You should see JSON like `{"ok":true,"slots":["2026-07-06T09:00:00+01:00", ...]}`.
+**Test the backend directly:** add some events to your Availability calendar, then
+paste `<your-exec-url>?action=availability` into a browser. You should see JSON like
+`{"ok":true,"slots":[{"start":"2026-07-06T10:00:00+01:00","end":"2026-07-06T10:30:00+01:00"}, ...]}`.
 
 > Re-deploy note: after editing `Code.gs`, use **Deploy → Manage deployments → Edit → Version:
 > New version** so the live `/exec` URL picks up your changes (the URL stays the same).
@@ -87,7 +100,9 @@ You should see JSON like `{"ok":true,"slots":["2026-07-06T09:00:00+01:00", ...]}
   only “simple” requests — a **GET** for availability and a **POST with `text/plain`** body for
   booking — so no preflight is triggered. **Don’t change the frontend to send
   `application/json`**; it would break cross-origin booking.
-- **Double-booking:** the backend re-checks the slot is still free at the moment of booking.
+- **Double-booking:** at booking time the backend re-confirms the availability event still
+  exists and that nothing on your other calendars conflicts, then consumes the slot
+  (`CONSUME_SLOT`) so it can't be booked again.
 - **Spam:** a hidden honeypot field plus server-side validation (email format, future-only,
   within lookahead). Apps Script’s free quotas comfortably cover personal-site traffic.
 - **Guest invites:** the visitor is added as a guest with `sendInvites: true`, so they receive a

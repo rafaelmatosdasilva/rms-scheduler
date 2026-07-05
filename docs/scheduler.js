@@ -55,11 +55,11 @@
   function Widget(root) {
     this.root = root;
     this.tz = null;
-    this.slotMinutes = 30;
-    this.byDay = {};      // 'YYYY-MM-DD' (owner tz) -> [ISO strings]
+    this.byDay = {};        // 'YYYY-MM-DD' (owner tz) -> [{start,end}...]
+    this.slotByStart = {};  // start ISO -> {start,end}
     this.dayKeys = [];
     this.selectedDay = null;
-    this.selectedSlot = null;
+    this.selectedSlot = null; // {start,end}
   }
 
   Widget.prototype.start = function () {
@@ -75,7 +75,6 @@
       .then(function (data) {
         if (!data || !data.ok) throw new Error((data && data.error) || 'Bad response');
         self.tz = data.timeZone || undefined;
-        self.slotMinutes = data.slotMinutes || 30;
         self.groupByDay(data.slots || []);
         self.renderPicker();
       })
@@ -86,13 +85,31 @@
 
   Widget.prototype.groupByDay = function (slots) {
     this.byDay = {};
+    this.slotByStart = {};
     this.dayKeys = [];
     for (var i = 0; i < slots.length; i++) {
-      var key = this.dayKey(slots[i]);
+      // Tolerate both shapes: "ISO" (fixed-length backend) and {start,end}.
+      var slot = typeof slots[i] === 'string' ? { start: slots[i] } : slots[i];
+      var key = this.dayKey(slot.start);
       if (!this.byDay[key]) { this.byDay[key] = []; this.dayKeys.push(key); }
-      this.byDay[key].push(slots[i]);
+      this.byDay[key].push(slot);
+      this.slotByStart[slot.start] = slot;
     }
     this.selectedDay = this.dayKeys[0] || null;
+  };
+
+  Widget.prototype.durationLabel = function (slot) {
+    if (!slot.end) return '';
+    var mins = Math.round((new Date(slot.end) - new Date(slot.start)) / 60000);
+    if (!mins || mins < 0) return '';
+    if (mins < 60) return mins + ' min';
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return m ? h + 'h ' + m + 'm' : h + ' hr' + (h > 1 ? 's' : '');
+  };
+
+  Widget.prototype.slotLabel = function (slot) {
+    var d = this.durationLabel(slot);
+    return this.fullLabel(slot.start) + (d ? ' · ' + d : '');
   };
 
   // ---- date formatting in the OWNER's timezone -------------------
@@ -151,7 +168,7 @@
       return;
     }
     var days = this.dayKeys.map(function (key) {
-      var iso = self.byDay[key][0];
+      var iso = self.byDay[key][0].start;
       var sel = key === self.selectedDay ? 'true' : 'false';
       return '<button class="rmssch-day" type="button" role="tab" aria-selected="' + sel + '" data-day="' + key + '">' +
         '<span class="rmssch-day-dow">' + esc(self.dow(iso)) + '</span>' +
@@ -159,9 +176,12 @@
         '</button>';
     }).join('');
 
-    var times = (this.byDay[this.selectedDay] || []).map(function (iso) {
-      return '<button class="rmssch-time" type="button" data-slot="' + esc(iso) + '">' +
-        esc(self.timeLabel(iso)) + '</button>';
+    var times = (this.byDay[this.selectedDay] || []).map(function (slot) {
+      var dur = self.durationLabel(slot);
+      return '<button class="rmssch-time" type="button" data-slot="' + esc(slot.start) + '">' +
+        esc(self.timeLabel(slot.start)) +
+        (dur ? '<span class="rmssch-time-dur">' + esc(dur) + '</span>' : '') +
+        '</button>';
     }).join('');
 
     this.el('<div class="rmssch-days" role="tablist">' + days + '</div>' +
@@ -171,14 +191,14 @@
       btn.onclick = function () { self.selectedDay = btn.getAttribute('data-day'); self.renderPicker(); };
     });
     this.root.querySelectorAll('.rmssch-time').forEach(function (btn) {
-      btn.onclick = function () { self.selectedSlot = btn.getAttribute('data-slot'); self.renderForm(); };
+      btn.onclick = function () { self.selectedSlot = self.slotByStart[btn.getAttribute('data-slot')]; self.renderForm(); };
     });
   };
 
   Widget.prototype.renderForm = function () {
     var self = this;
     this.el(
-      '<div class="rmssch-selected">' + esc(this.fullLabel(this.selectedSlot)) + '</div>' +
+      '<div class="rmssch-selected">' + esc(this.slotLabel(this.selectedSlot)) + '</div>' +
       '<form class="rmssch-form" novalidate>' +
         '<div class="rmssch-field"><label>Name<input name="name" type="text" required autocomplete="name"></label></div>' +
         '<div class="rmssch-field"><label>Email<input name="email" type="email" required autocomplete="email"></label></div>' +
@@ -213,7 +233,7 @@
     btn.innerHTML = '<span class="rmssch-spinner"></span> Booking…';
 
     var payload = {
-      start: this.selectedSlot,
+      start: this.selectedSlot.start,
       name: name,
       email: email,
       notes: form.notes.value.trim(),
@@ -250,7 +270,7 @@
       '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">✓</div>' +
         '<div class="rmssch-title">You’re booked!</div>' +
-        '<p class="rmssch-sub">' + esc(this.fullLabel(this.selectedSlot)) + '</p>' +
+        '<p class="rmssch-sub">' + esc(this.slotLabel(this.selectedSlot)) + '</p>' +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
       '</div>');
   };

@@ -3,14 +3,22 @@
  * ------------------------------------------------------------------
  * Runs AS the calendar owner (no stored credentials).
  *
- *   doGet(?action=availability&days=N)  -> { ok, slots:[ISO...], timeZone, slotMinutes, label }
+ * MODEL: you define availability by creating events on a dedicated
+ * "Availability" calendar. Each event = ONE bookable slot; its length
+ * is the call length. When a visitor books, the appointment is written
+ * to your BOOKING calendar (with a guest invite) and the availability
+ * event is consumed so it can't be booked twice.
+ *
+ *   doGet(?action=availability&days=N)
+ *       -> { ok, timeZone, label, slots:[{start,end}...] }
  *   doPost({ start, name, email, notes, company })
- *                                       -> { ok, eventId } | { ok:false, reason }
+ *       -> { ok, eventId } | { ok:false, reason }
  *
  * Deploy: Deploy > New deployment > Web app
  *   - Execute as:   Me
  *   - Who has access: Anyone
- * Then copy the /exec URL into the widget's data-endpoint.
+ * After ANY code change, re-deploy a NEW VERSION:
+ *   Deploy > Manage deployments > edit (pencil) > Version: New version.
  *
  * NOTE on CORS: Apps Script web apps cannot answer preflight (OPTIONS)
  * or set custom headers. The widget therefore uses only "simple"
@@ -20,43 +28,33 @@
  * ================================================================== */
 
 // ----------------------------- CONFIG ------------------------------
-// Edit these to taste. Times are interpreted in the timeZone set in
-// appsscript.json (keep them in sync).
 var CONFIG = {
-  // Calendar that booked events are CREATED on. Busy/free is always checked
-  // across ALL calendars you own (see busyEvents_), regardless of this value.
-  CALENDAR_ID: 'primary',        // 'primary' or a specific calendar id/email
-  TIMEZONE: 'Europe/Lisbon',     // MUST match appsscript.json "timeZone"
-  SLOT_MINUTES: 30,              // length of each bookable slot
-  BUFFER_MINUTES: 0,             // gap enforced around existing events
-  LOOKAHEAD_DAYS: 14,            // how far ahead visitors may book
-  MIN_NOTICE_MINUTES: 120,       // earliest bookable slot from "now"
+  // Dedicated calendar where YOU create events to mark bookable slots.
+  // Each event becomes one offerable appointment (its duration = call length).
+  AVAILABILITY_CALENDAR_ID: 'PASTE_AVAILABILITY_CALENDAR_ID',
+
+  // Calendar that confirmed bookings are written to (with the guest invite).
+  BOOKING_CALENDAR_ID: 'primary',   // 'primary' or a specific calendar id/email
+
+  TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
+  LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
+  MIN_NOTICE_MINUTES: 120,          // earliest bookable slot from "now"
+  BUFFER_MINUTES: 0,                // gap enforced around conflicting events
+  CONSUME_SLOT: true,               // delete the availability event once booked
+
   EVENT_TITLE: 'Meeting with {name}',
-  EVENT_LOCATION: '',            // optional
-  // Business hours per weekday. 0=Sun ... 6=Sat. null = closed that day.
-  BUSINESS_HOURS: {
-    0: null,
-    1: { start: '09:00', end: '17:00' },
-    2: { start: '09:00', end: '17:00' },
-    3: { start: '09:00', end: '17:00' },
-    4: { start: '09:00', end: '17:00' },
-    5: { start: '09:00', end: '17:00' },
-    6: null
-  }
+  EVENT_LOCATION: ''                // optional
 };
 // -------------------------------------------------------------------
 
 function doGet(e) {
   try {
     var action = (e && e.parameter && e.parameter.action) || 'availability';
-    if (action !== 'availability') {
-      return json_({ ok: false, error: 'unknown action' });
-    }
+    if (action !== 'availability') return json_({ ok: false, error: 'unknown action' });
     var days = clampInt_((e && e.parameter && e.parameter.days), CONFIG.LOOKAHEAD_DAYS, 1, CONFIG.LOOKAHEAD_DAYS);
     return json_({
       ok: true,
       timeZone: CONFIG.TIMEZONE,
-      slotMinutes: CONFIG.SLOT_MINUTES,
       label: CONFIG.TIMEZONE,
       slots: computeAvailability_(days)
     });
@@ -85,35 +83,39 @@ function doPost(e) {
     if (isNaN(start.getTime())) return json_({ ok: false, reason: 'invalid', message: 'Invalid time.' });
 
     var now = new Date();
-    var minStart = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000);
-    var maxStart = new Date(now.getTime() + CONFIG.LOOKAHEAD_DAYS * 86400000);
-    if (start < minStart || start > maxStart) {
-      return json_({ ok: false, reason: 'invalid', message: 'That time is no longer bookable.' });
+    if (start < new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000) ||
+        start > new Date(now.getTime() + CONFIG.LOOKAHEAD_DAYS * 86400000)) {
+      return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
     }
 
-    var end = new Date(start.getTime() + CONFIG.SLOT_MINUTES * 60000);
-    var cal = getCalendar_();
+    // The slot must still exist on the availability calendar. This also gives
+    // us the authoritative end time (visitors can't tamper with duration).
+    var slotEvent = findAvailabilityEvent_(start);
+    if (!slotEvent) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot is no longer available.' });
+    var end = slotEvent.getEndTime();
 
-    // Re-check the exact slot is still free (guards pick -> submit race).
-    if (isBusy_(start, end)) {
-      return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just booked.' });
-    }
+    // Re-check nothing else on your calendars now conflicts.
+    if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
 
     var title = CONFIG.EVENT_TITLE.replace('{name}', name);
     var description = 'Booked via website.\nName: ' + name + '\nEmail: ' + email +
       (notes ? ('\n\nNotes:\n' + notes) : '');
 
-    var event = cal.createEvent(title, start, end, {
+    var event = getBookingCalendar_().createEvent(title, start, end, {
       description: description,
       location: CONFIG.EVENT_LOCATION || undefined,
       guests: email,
       sendInvites: true
     });
 
+    // Consume the availability slot so it can't be booked again.
+    if (CONFIG.CONSUME_SLOT) { try { slotEvent.deleteEvent(); } catch (_) {} }
+
     return json_({
       ok: true,
       eventId: event.getId(),
-      start: Utilities.formatDate(start, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
+      start: Utilities.formatDate(start, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      end: Utilities.formatDate(end, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
     });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
@@ -125,95 +127,85 @@ function doPost(e) {
 function computeAvailability_(days) {
   var now = new Date();
   var earliest = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000);
+  var horizon = new Date(now.getTime() + days * 86400000);
+
+  var events = getAvailabilityCalendar_().getEvents(now, horizon);
   var slots = [];
-
-  var today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (var d = 0; d < days; d++) {
-    var day = new Date(today.getTime());
-    day.setDate(today.getDate() + d);
-
-    var hours = CONFIG.BUSINESS_HOURS[day.getDay()];
-    if (!hours) continue;
-
-    var open = atTime_(day, hours.start);
-    var close = atTime_(day, hours.end);
-    if (!open || !close || close <= open) continue;
-
-    // Fetch the day's events (across all your calendars) once, then test
-    // each candidate slot against them.
-    var events = busyEvents_(open, close);
-
-    var cursor = new Date(open.getTime());
-    while (cursor.getTime() + CONFIG.SLOT_MINUTES * 60000 <= close.getTime()) {
-      var slotStart = new Date(cursor.getTime());
-      var slotEnd = new Date(cursor.getTime() + CONFIG.SLOT_MINUTES * 60000);
-
-      if (slotStart >= earliest && !overlapsAny_(events, slotStart, slotEnd)) {
-        slots.push(Utilities.formatDate(slotStart, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"));
-      }
-      cursor = new Date(cursor.getTime() + CONFIG.SLOT_MINUTES * 60000);
-    }
+  for (var i = 0; i < events.length; i++) {
+    var ev = events[i];
+    if (ev.isAllDayEvent()) continue;            // all-day events aren't slots
+    var s = ev.getStartTime();
+    var e = ev.getEndTime();
+    if (s < earliest) continue;                  // too soon / in the past
+    if (isBusy_(s, e)) continue;                  // conflicts elsewhere -> hide
+    slots.push({
+      start: Utilities.formatDate(s, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      end: Utilities.formatDate(e, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
+    });
   }
   return slots;
 }
 
-function isBusy_(start, end) {
-  return overlapsAny_(busyEvents_(start, end), start, end);
+/** The availability event that starts exactly at `start`, or null. */
+function findAvailabilityEvent_(start) {
+  var evs = getAvailabilityCalendar_().getEvents(start, new Date(start.getTime() + 60000));
+  for (var i = 0; i < evs.length; i++) {
+    if (!evs[i].isAllDayEvent() && Math.abs(evs[i].getStartTime().getTime() - start.getTime()) < 1000) {
+      return evs[i];
+    }
+  }
+  return null;
 }
 
 /**
- * Events across ALL calendars you own within [start, end), excluding any you
- * have declined. Owned-only so subscribed public calendars (e.g. holidays)
- * don't wrongly block whole days. Calendar list is cached per execution.
+ * True if any calendar you own (EXCEPT the availability calendar, whose
+ * events are offers rather than commitments) has a non-declined event
+ * overlapping [start, end), expanded by BUFFER_MINUTES.
  */
-var _busyCalendars = null;
-function busyEvents_(start, end) {
-  if (!_busyCalendars) _busyCalendars = CalendarApp.getAllOwnedCalendars();
-  var out = [];
-  for (var i = 0; i < _busyCalendars.length; i++) {
-    var evs = _busyCalendars[i].getEvents(start, end);
-    for (var j = 0; j < evs.length; j++) {
-      if (evs[j].getMyStatus() !== CalendarApp.GuestStatus.NO) out.push(evs[j]);
-    }
-  }
-  return out;
-}
-
-function overlapsAny_(events, slotStart, slotEnd) {
+function isBusy_(start, end) {
   var buffer = CONFIG.BUFFER_MINUTES * 60000;
-  for (var i = 0; i < events.length; i++) {
-    var evStart = events[i].getStartTime().getTime() - buffer;
-    var evEnd = events[i].getEndTime().getTime() + buffer;
-    if (evStart < slotEnd.getTime() && evEnd > slotStart.getTime()) return true;
+  var cals = getBusyCalendars_();
+  for (var i = 0; i < cals.length; i++) {
+    var evs = cals[i].getEvents(new Date(start.getTime() - buffer), new Date(end.getTime() + buffer));
+    for (var j = 0; j < evs.length; j++) {
+      var ev = evs[j];
+      if (ev.getMyStatus() === CalendarApp.GuestStatus.NO) continue; // declined
+      var es = ev.getStartTime().getTime() - buffer;
+      var ee = ev.getEndTime().getTime() + buffer;
+      if (es < end.getTime() && ee > start.getTime()) return true;
+    }
   }
   return false;
 }
 
 // ---------------------------- HELPERS ------------------------------
 
-function getCalendar_() {
-  return CONFIG.CALENDAR_ID === 'primary'
-    ? CalendarApp.getDefaultCalendar()
-    : CalendarApp.getCalendarById(CONFIG.CALENDAR_ID);
+var _availabilityCal = null, _bookingCal = null, _busyCals = null;
+
+function getAvailabilityCalendar_() {
+  if (!_availabilityCal) _availabilityCal = CalendarApp.getCalendarById(CONFIG.AVAILABILITY_CALENDAR_ID);
+  if (!_availabilityCal) throw new Error('Availability calendar not found: ' + CONFIG.AVAILABILITY_CALENDAR_ID);
+  return _availabilityCal;
 }
 
-/** Returns a Date at HH:MM on the given day, in the script timezone. */
-function atTime_(day, hhmm) {
-  var parts = String(hhmm).split(':');
-  if (parts.length !== 2) return null;
-  var h = parseInt(parts[0], 10);
-  var m = parseInt(parts[1], 10);
-  if (isNaN(h) || isNaN(m)) return null;
-  var dt = new Date(day.getTime());
-  dt.setHours(h, m, 0, 0);
-  return dt;
+function getBookingCalendar_() {
+  if (!_bookingCal) {
+    _bookingCal = CONFIG.BOOKING_CALENDAR_ID === 'primary'
+      ? CalendarApp.getDefaultCalendar()
+      : CalendarApp.getCalendarById(CONFIG.BOOKING_CALENDAR_ID);
+  }
+  return _bookingCal;
 }
 
-function isEmail_(s) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+/** All owned calendars except the availability calendar. Cached per run. */
+function getBusyCalendars_() {
+  if (_busyCals) return _busyCals;
+  var availId = getAvailabilityCalendar_().getId();
+  _busyCals = CalendarApp.getAllOwnedCalendars().filter(function (c) { return c.getId() !== availId; });
+  return _busyCals;
 }
+
+function isEmail_(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
 
 function clampInt_(v, dflt, min, max) {
   var n = parseInt(v, 10);
@@ -222,7 +214,5 @@ function clampInt_(v, dflt, min, max) {
 }
 
 function json_(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }

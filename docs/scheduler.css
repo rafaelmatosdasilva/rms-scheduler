@@ -77,6 +77,7 @@
   text-align: center;
 }
 .rmssch-time:hover { border-color: var(--rmssch-accent); color: var(--rmssch-accent); }
+.rmssch-time-dur { display: block; font-size: 0.68rem; color: var(--rmssch-muted); margin-top: 2px; }
 
 /* Form */
 .rmssch-selected {
