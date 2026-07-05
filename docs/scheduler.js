@@ -76,16 +76,24 @@
   Widget.prototype.fetchSlots = function () {
     var self = this;
     var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?' : '&') + 'action=availability&_=' + Date.now();
-    fetch(url, { method: 'GET' })
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+    fetch(url, ctrl ? { method: 'GET', signal: ctrl.signal } : { method: 'GET' })
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        if (timer) clearTimeout(timer);
         if (!data || !data.ok) throw new Error((data && data.error) || 'Bad response');
         self.tz = data.timeZone || undefined;
         self.groupByDay(data.slots || []);
         self.renderPicker();
       })
-      .catch(function () {
-        self.renderError('Could not load available times. Please try again shortly.');
+      .catch(function (err) {
+        if (timer) clearTimeout(timer);
+        try { console.error('[rms-scheduler] availability request failed:', err); } catch (_) {}
+        var aborted = err && err.name === 'AbortError';
+        self.renderError(aborted
+          ? 'Timed out loading times. Tap retry.'
+          : 'Could not load available times. Please try again shortly.');
       });
   };
 
