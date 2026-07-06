@@ -183,7 +183,6 @@
         '<div class="rmssch-daystrip">' + strip + '</div>' +
         '<div class="rmssch-day-head">' +
           '<div class="rmssch-day-title rmssch-skel" style="width:72px;height:22px"></div>' +
-          '<div class="rmssch-seg"><button type="button" class="is-on">12h</button><button type="button">24h</button></div>' +
         '</div>' +
         '<div class="rmssch-slots">' + pills + '</div>' +
       '</div>' +
@@ -416,10 +415,6 @@
       '<div class="rmssch-daystrip">' + strip + '</div>' +
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
-        '<div class="rmssch-seg">' +
-          '<button type="button" data-fmt="12" class="' + (this.hour12 ? 'is-on' : '') + '">12h</button>' +
-          '<button type="button" data-fmt="24" class="' + (!this.hour12 ? 'is-on' : '') + '">24h</button>' +
-        '</div>' +
       '</div>' +
       '<div class="rmssch-slots">' + slots + '</div>' +
     '</div>';

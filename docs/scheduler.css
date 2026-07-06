@@ -191,7 +191,7 @@
   #rms-scheduler { padding: 18px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; }
-  .rmssch-day-title { display: none; }
+  .rmssch-day-head { display: none; }
   .rmssch-daystrip {
     display: flex; gap: 8px; overflow-x: auto;
     scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent;
