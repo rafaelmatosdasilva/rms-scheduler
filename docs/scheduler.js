@@ -346,7 +346,7 @@
         '<div class="rmssch-field"><label>Name<input name="name" type="text" required autocomplete="name"></label></div>' +
         '<div class="rmssch-field"><label>Email<input name="email" type="email" required autocomplete="email"></label></div>' +
         '<div class="rmssch-field"><label>Notes (optional)<textarea name="notes" rows="2"></textarea></label></div>' +
-        '<div class="rmssch-hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>' +
+        '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
@@ -373,7 +373,7 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="rmssch-spinner"></span> Booking…';
 
-    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), company: form.company.value };
+    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), hp: form.hp_check.value };
     fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json(); })
       .then(function (data) {

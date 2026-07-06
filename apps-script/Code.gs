@@ -76,8 +76,9 @@ function doPost(e) {
     var body = {};
     try { body = JSON.parse(e.postData.contents); } catch (_) {}
 
-    // Honeypot: real users never fill "company". Pretend success, book nothing.
-    if (body.company) return json_({ ok: true, spam: true });
+    // Honeypot: real users never fill this hidden field. Pretend success, book
+    // nothing. (Named hp_check, not "company", so browser autofill won't trip it.)
+    if (body.hp) return json_({ ok: true, spam: true });
 
     var name = (body.name || '').toString().trim();
     var email = (body.email || '').toString().trim();
