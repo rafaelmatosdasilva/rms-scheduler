@@ -244,6 +244,8 @@
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
 .rmssch-error { color: #b42318; }
 .rmssch-confirm { text-align: center; padding: 8px 0; }
+.rmssch-meet { color: var(--rmssch-accent); font-weight: 600; text-decoration: none; }
+.rmssch-meet:hover { text-decoration: underline; }
 .rmssch-confirm-check {
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--rmssch-accent);

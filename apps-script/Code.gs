@@ -44,7 +44,15 @@ var CONFIG = {
   CACHE_SECONDS: 45,                // cache availability this long (speeds loads)
 
   EVENT_TITLE: 'Meeting with {name}',
-  EVENT_LOCATION: ''                // optional
+  EVENT_LOCATION: '',               // optional default location (any slot)
+
+  // Online slots ("online" in the calendar-event title) get a Google Meet link.
+  // In-person slots ("in person" in the title) get this physical address.
+  // NOTE: Meet links require the advanced "Google Calendar API" service enabled
+  // in the Apps Script editor (Services + -> Google Calendar API). If it isn't
+  // enabled the booking still succeeds — just without the Meet link.
+  ADD_MEET_FOR_ONLINE: true,
+  IN_PERSON_LOCATION: ''            // e.g. 'Rua Example 12, Lisboa'
 };
 // -------------------------------------------------------------------
 
@@ -109,13 +117,9 @@ function doPost(e) {
     var title = CONFIG.EVENT_TITLE.replace('{name}', name);
     var description = 'Booked via website.\nName: ' + name + '\nEmail: ' + email +
       (notes ? ('\n\nNotes:\n' + notes) : '');
+    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
 
-    var event = getBookingCalendar_().createEvent(title, start, end, {
-      description: description,
-      location: CONFIG.EVENT_LOCATION || undefined,
-      guests: email,
-      sendInvites: true
-    });
+    var event = createBooking_(title, description, start, end, email, type);
 
     // Consume the availability slot so it can't be booked again.
     if (CONFIG.CONSUME_SLOT) { try { slotEvent.deleteEvent(); } catch (_) {} }
@@ -125,7 +129,9 @@ function doPost(e) {
 
     return json_({
       ok: true,
-      eventId: event.getId(),
+      eventId: event.id || (event.getId && event.getId()),
+      meetLink: event.hangoutLink || '',
+      type: type,
       start: Utilities.formatDate(start, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
       end: Utilities.formatDate(end, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
     });
@@ -224,6 +230,38 @@ function isBusy_(start, end) {
   }
   return false;
 }
+
+/**
+ * Create the booking event. Online slots get a Google Meet link (via the
+ * advanced Calendar service, if enabled); in-person slots get the configured
+ * address. Falls back to CalendarApp when Meet isn't needed/available.
+ */
+function createBooking_(title, description, start, end, email, type) {
+  var location = (type === 'inperson' ? (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION) : CONFIG.EVENT_LOCATION);
+  var wantsMeet = (type === 'online') && CONFIG.ADD_MEET_FOR_ONLINE;
+
+  if (wantsMeet && typeof Calendar !== 'undefined' && Calendar.Events) {
+    var resource = {
+      summary: title,
+      description: description,
+      location: location || undefined,
+      start: { dateTime: iso_(start), timeZone: CONFIG.TIMEZONE },
+      end: { dateTime: iso_(end), timeZone: CONFIG.TIMEZONE },
+      attendees: [{ email: email }],
+      conferenceData: { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } }
+    };
+    return Calendar.Events.insert(resource, CONFIG.BOOKING_CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'all' });
+  }
+
+  return getBookingCalendar_().createEvent(title, start, end, {
+    description: description,
+    location: location || undefined,
+    guests: email,
+    sendInvites: true
+  });
+}
+
+function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"); }
 
 // ---------------------------- HELPERS ------------------------------
 

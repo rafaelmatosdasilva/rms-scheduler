@@ -474,7 +474,7 @@
     fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (data && data.ok) return self.renderConfirm(name, email);
+        if (data && data.ok) return self.renderConfirm(name, email, data);
         if (data && data.reason === 'taken') { self.selectedSlot = null; self.start(); return; }
         btn.disabled = false; btn.textContent = 'Confirm booking';
         showErr(errEl, (data && data.message) || 'Something went wrong. Please try again.');
@@ -485,13 +485,15 @@
       });
   };
 
-  Widget.prototype.renderConfirm = function (name, email) {
+  Widget.prototype.renderConfirm = function (name, email, data) {
+    var meet = data && data.meetLink;
     // The details live in the info panel; the main area shows the confirmation.
     this.shell(
       '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">✓</div>' +
         '<div class="rmssch-title">You’re booked!</div>' +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
+        (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
       '</div>');
   };
 
