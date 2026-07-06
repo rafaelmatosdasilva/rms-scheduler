@@ -50,5 +50,21 @@
       Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], v); });
     })();
   </script>
+
+  <!-- Report our height to the parent so it can auto-resize the iframe. -->
+  <script>
+    (function () {
+      var el = document.getElementById('rms-scheduler');
+      var last = 0;
+      function post() {
+        var h = Math.ceil(el ? el.getBoundingClientRect().height : document.documentElement.scrollHeight);
+        if (h && h !== last) { last = h; try { parent.postMessage({ type: 'rmssch:height', height: h }, '*'); } catch (e) {} }
+      }
+      if ('ResizeObserver' in window && el) new ResizeObserver(post).observe(el);
+      window.addEventListener('load', post);
+      window.addEventListener('resize', post);
+      setTimeout(post, 300); setTimeout(post, 1200);
+    })();
+  </script>
 </body>
 </html>
