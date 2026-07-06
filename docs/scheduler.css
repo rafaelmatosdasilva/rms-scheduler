@@ -76,8 +76,8 @@
 .rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 650; }
 .rmssch-when { display: flex; flex-direction: column; gap: 2px; }
 .rmssch-when-time { color: var(--rmssch-muted); }
-.rmssch-ic { flex: 0 0 16px; color: currentColor; opacity: 0.85; margin-top: 1px; }
-.rmssch-ic svg { width: 16px; height: 16px; display: block; }
+.rmssch-ic { flex: 0 0 14px; color: currentColor; opacity: 0.85; margin-top: 1px; }
+.rmssch-ic svg { width: 14px; height: 14px; display: block; }
 
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
 /* Fill the main column and dock the action buttons at the bottom. */
