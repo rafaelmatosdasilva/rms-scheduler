@@ -123,9 +123,15 @@
 .rmssch-cell.is-avail,
 .rmssch-slot,
 .rmssch-back { background: var(--rmssch-surface); color: var(--rmssch-fg); }
+/* Always-present transparent outline so hover can dissolve its color in/out. */
+.rmssch-cell.is-avail,
+.rmssch-slot,
+.rmssch-back,
+.rmssch-daypill { outline: 2px solid transparent; outline-offset: -2px; }
 .rmssch-cell.is-avail:hover,
 .rmssch-slot:hover,
-.rmssch-back:hover { outline: 2px solid var(--rmssch-accent); outline-offset: -2px; }
+.rmssch-back:hover,
+.rmssch-daypill:hover { outline-color: var(--rmssch-accent); }
 .rmssch-cell.is-sel { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
 .rmssch-cell-dot {
   position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
@@ -266,8 +272,8 @@
 /* Subtle hover/press polish. */
 .rmssch-cell.is-avail, .rmssch-slot, .rmssch-back, .rmssch-btn, .rmssch-daypill,
 .rmssch-seg button, .rmssch-cal-nav button, .rmssch-meet {
-  transition: transform 0.09s ease, background 0.15s ease, border-color 0.15s ease,
-              outline-color 0.12s ease, filter 0.15s ease;
+  transition: transform 0.09s ease, background 0.2s ease, border-color 0.2s ease,
+              outline-color 0.22s ease, filter 0.2s ease;
 }
 .rmssch-btn:hover:not(:disabled) { filter: brightness(1.06); }
 .rmssch-cell.is-avail:active, .rmssch-slot:active, .rmssch-back:active,
