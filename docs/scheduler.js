@@ -35,7 +35,7 @@
   var LOCATION_TEXT = attr('data-location') || 'Details provided upon confirmation.';
   // In-person slots aren't auto-confirmed (e.g. require ticket validation).
   var PENDING_NOTE = attr('data-pending-note') ||
-    'In-person sessions need confirmation — you’ll get an email once it’s validated.';
+    'In-person sessions require a valid Lisboa UX co-working ticket and are confirmed manually.';
 
   // width/height on the <svg> so they never render full-size before CSS loads.
   var SV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">';
@@ -441,7 +441,11 @@
     var wd = new Intl.DateTimeFormat('en-US', { timeZone: this.viewTz, weekday: 'short' }).format(new Date(iso));
     var dd = new Intl.DateTimeFormat('en-US', { timeZone: this.viewTz, day: '2-digit' }).format(new Date(iso));
 
-    var slots = this.byDay[this.selectedDay].map(function (slot) {
+    var daySlots = this.byDay[this.selectedDay];
+    // Note above the slots when the whole day is in-person only.
+    var allInPerson = daySlots.length && daySlots.every(function (s) { return s.type === 'inperson'; });
+
+    var slots = daySlots.map(function (slot) {
       var ti = slotTypeInfo(slot.type);
       var sub = [self.durationLabel(slot), ti ? ti.label : ''].filter(Boolean).join(' · ');
       return '<button type="button" class="rmssch-slot" data-slot="' + esc(slot.start) + '">' +
@@ -466,6 +470,7 @@
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
+      (allInPerson ? '<div class="rmssch-note">' + esc(PENDING_NOTE) + '</div>' : '') +
       '<div class="rmssch-slots">' + slots + '</div>' +
     '</div>';
   };
