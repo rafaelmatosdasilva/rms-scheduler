@@ -263,30 +263,30 @@
 
   Widget.prototype.frame = function (html) { this.root.innerHTML = html; };
 
-  // Left event-info panel. Reflects the current selection.
-  Widget.prototype.infoHtml = function () {
+  // Booking detail rows (date, duration, location) — shared by the info panel
+  // and the confirmation screen.
+  Widget.prototype.metaRows = function () {
     var slot = this.selectedSlot;
     function row(icon, text, muted) {
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
     }
-    var host = (HOST_AVATAR || HOST_NAME) ? '<div class="rmssch-host">' +
-      (HOST_AVATAR ? '<img class="rmssch-host-av" width="56" height="56" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
-      (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     var ti = slot ? slotTypeInfo(slot.type) : null;
-    // Location line, below the date, changing with the selection.
     var locRow;
     if (ti && ti.key === 'inperson') locRow = row(ICON.pin, 'In person');
     else if (ti && ti.key === 'online') locRow = row(ICON.video, 'Google Meet');
     else locRow = row(ICON.video, LOCATION_TEXT);
+    return row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
+      (dur ? row(ICON.clock, dur) : '') +
+      locRow;
+  };
+
+  // Left event-info panel.
+  Widget.prototype.infoHtml = function () {
+    var host = HOST_AVATAR ? '<div class="rmssch-host"><img class="rmssch-host-av" width="56" height="56" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'"></div>' : '';
     return '<div class="rmssch-info">' +
       '<div class="rmssch-info-head">' + host + '<div class="rmssch-info-title">' + esc(TITLE) + '</div></div>' +
-      '<div class="rmssch-info-meta">' +
-        row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
-        (dur ? row(ICON.clock, dur) : '') +   // duration below the date/time
-        locRow +                              // location below the date
-        (this.viewTz ? row(ICON.globe, this.viewTz.replace(/_/g, ' ')) : '') +
-      '</div>' +
+      '<div class="rmssch-info-meta">' + this.metaRows() + '</div>' +
     '</div>';
   };
 
@@ -359,6 +359,16 @@
     this.root.querySelectorAll('.rmssch-slot').forEach(function (b) {
       b.onclick = function () { self.selectedSlot = self.slotByStart[b.getAttribute('data-slot')]; self.renderForm(); };
     });
+    this.centerSelectedDay();
+  };
+
+  // Scroll the selected day pill to the middle of the horizontal strip (mobile).
+  Widget.prototype.centerSelectedDay = function () {
+    var strip = this.root.querySelector('.rmssch-daystrip');
+    var sel = strip && strip.querySelector('.rmssch-daypill.is-sel');
+    if (strip && sel && strip.clientWidth) {
+      strip.scrollLeft = sel.offsetLeft - (strip.clientWidth - sel.clientWidth) / 2;
+    }
   };
 
   Widget.prototype.calendarHtml = function () {
@@ -485,16 +495,19 @@
       });
   };
 
+  // Full-width centered confirmation — no side info panel.
   Widget.prototype.renderConfirm = function (name, email, data) {
+    this.root.classList.add('rmssch-centered');
     var meet = data && data.meetLink;
-    // The details live in the info panel; the main area shows the confirmation.
-    this.shell(
-      '<div class="rmssch-confirm">' +
+    var who = HOST_NAME ? ' with ' + esc(HOST_NAME) : '';
+    this.frame(
+      '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">✓</div>' +
-        '<div class="rmssch-title">You’re booked!</div>' +
+        '<div class="rmssch-title">Your booking' + who + ' is confirmed.</div>' +
+        '<div class="rmssch-info-meta rmssch-confirm-meta">' + this.metaRows() + '</div>' +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
         (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
-      '</div>');
+      '</div></div>');
   };
 
   // ---- utils -----------------------------------------------------

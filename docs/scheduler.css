@@ -201,7 +201,8 @@
   .rmssch-daystrip {
     display: flex; gap: 8px; overflow-x: auto;
     scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent;
-    padding-bottom: 8px; margin-bottom: 12px;
+    /* Bleed to the card edges (cancel the 18px card padding). */
+    margin: 0 -18px 12px; padding: 0 18px 8px;
   }
 }
 
@@ -245,6 +246,9 @@
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
 .rmssch-error { color: #b42318; }
 .rmssch-confirm { text-align: center; padding: 8px 0; }
+.rmssch-confirm .rmssch-title { margin-bottom: 4px; }
+/* Booking details: block centered, rows themselves left-aligned. */
+.rmssch-confirm-meta { width: fit-content; margin: 14px auto; text-align: left; }
 .rmssch-meet { color: var(--rmssch-accent); font-weight: 650; text-decoration: none; }
 .rmssch-meet:hover { text-decoration: underline; }
 .rmssch-confirm-check {
