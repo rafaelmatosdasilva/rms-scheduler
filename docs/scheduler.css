@@ -113,6 +113,11 @@
   font-size: 0.95rem; font-weight: 650;
 }
 .rmssch-cell--empty { background: none; }
+/* Available day: number on top, one accent dot per slot below. */
+.rmssch-cell.is-avail { flex-direction: column; gap: 3px; }
+.rmssch-cell-dots { display: flex; gap: 3px; height: 4px; align-items: center; }
+.rmssch-cell-dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--rmssch-accent); }
+.rmssch-cell.is-sel .rmssch-cell-dots i { background: var(--rmssch-accent-contrast); }
 .rmssch-cell.is-off { color: var(--rmssch-muted); opacity: 0.55; }
 /* Shared "tile" look for available calendar days, time slots AND the Back button. */
 .rmssch-cell.is-avail,

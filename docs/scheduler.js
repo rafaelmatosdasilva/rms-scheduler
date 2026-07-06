@@ -394,16 +394,21 @@
     var firstIdx = monthIndex_(this.dayKeys[0]);
     var lastIdx = monthIndex_(this.dayKeys[this.dayKeys.length - 1]);
 
+    var MAX_DOTS = 6;
     var cells = '';
     for (var b = 0; b < offset; b++) cells += '<span class="rmssch-cell rmssch-cell--empty"></span>';
     for (var d = 1; d <= dim; d++) {
       var key = y + '-' + pad(m + 1) + '-' + pad(d);
-      var dot = key === todayKey ? '<span class="rmssch-cell-dot"></span>' : '';
       if (this.byDay[key]) {
         var sel = key === this.selectedDay ? ' is-sel' : '';
-        cells += '<button type="button" class="rmssch-cell is-avail' + sel + '" data-day="' + key + '">' + d + dot + '</button>';
+        // One accent dot per available slot that day (capped).
+        var n = Math.min(this.byDay[key].length, MAX_DOTS), dots = '';
+        for (var q = 0; q < n; q++) dots += '<i></i>';
+        cells += '<button type="button" class="rmssch-cell is-avail' + sel + '" data-day="' + key + '">' +
+          '<span class="rmssch-cell-num">' + d + '</span><span class="rmssch-cell-dots">' + dots + '</span></button>';
       } else {
-        cells += '<span class="rmssch-cell is-off">' + d + dot + '</span>';
+        var today = key === todayKey ? '<span class="rmssch-cell-dot"></span>' : '';
+        cells += '<span class="rmssch-cell is-off">' + d + today + '</span>';
       }
     }
     // Pad to a constant 6 rows (42 cells) so the grid height never changes
