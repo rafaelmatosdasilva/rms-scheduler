@@ -225,10 +225,10 @@
 .rmssch-field input,
 .rmssch-field textarea {
   width: 100%; font: inherit; font-size: 0.9rem; padding: 9px 11px;
-  /* Stronger, theme-adaptive border so fields read clearly. */
-  border: 1px solid color-mix(in srgb, var(--rmssch-fg) 28%, transparent);
+  /* Theme-adaptive border + subtle filled background. */
+  border: 1px solid color-mix(in srgb, var(--rmssch-fg) 20%, transparent);
   border-radius: 9px;
-  background: var(--rmssch-bg); color: inherit;
+  background: var(--rmssch-surface); color: inherit;
 }
 .rmssch-field input::placeholder,
 .rmssch-field textarea::placeholder { color: var(--rmssch-muted); }
@@ -241,8 +241,8 @@
 .rmssch-note {
   display: flex; gap: 8px; align-items: flex-start;
   font-size: 0.68rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
-  background: none; border: 1px solid color-mix(in srgb, var(--rmssch-fg) 28%, transparent);
-  border-radius: 9px; padding: 10px 11px; margin-bottom: 4px;
+  background: none; border: 1px solid color-mix(in srgb, var(--rmssch-fg) 20%, transparent);
+  border-radius: 9px; padding: 10px 11px; margin-bottom: 0;
 }
 .rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
 .rmssch-note-ic svg { width: 14px; height: 14px; display: block; }
