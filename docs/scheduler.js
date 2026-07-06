@@ -285,10 +285,11 @@
       : esc('Select a date & time');
     var dur = slot ? this.durationLabel(slot) : '';
     var ti = slot ? slotTypeInfo(slot.type) : null;
-    var locRow;
+    // Only show the location once a typed slot is picked (avoids implying
+    // "Google Meet" before the visitor has chosen online vs in-person).
+    var locRow = '';
     if (ti && ti.key === 'inperson') locRow = row(ICON.pin, esc('In person'));
     else if (ti && ti.key === 'online') locRow = row(ICON.video, esc('Google Meet'));
-    else locRow = row(ICON.video, esc(LOCATION_TEXT));
     return row(ICON.cal, when, !slot) +
       (dur ? row(ICON.clock, esc(dur)) : '') +
       locRow;

@@ -5,7 +5,7 @@
 #rms-scheduler {
   --rmssch-accent: #f4e04d;          /* selection / primary */
   --rmssch-accent-contrast: #16181d; /* text on accent */
-  --rmssch-avail-dot: #22c55e;       /* green dot on time slots */
+  --rmssch-avail-dot: var(--rmssch-accent);   /* slot dot = accent (overridable) */
   --rmssch-bg: #ffffff;
   /* Greys are black-with-opacity (light) / white-with-opacity (dark) so they
      tint the chosen background instead of clashing. */
