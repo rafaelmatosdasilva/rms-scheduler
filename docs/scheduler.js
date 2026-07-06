@@ -389,13 +389,15 @@
   };
 
   Widget.prototype.renderConfirm = function (name, email) {
-    this.card(
-      '<div class="rmssch-confirm">' +
+    // No outer title/subtitle on the confirmation — it has its own heading.
+    this.root.classList.add('rmssch-centered');
+    this.frame(
+      '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">✓</div>' +
         '<div class="rmssch-title">You’re booked!</div>' +
         '<p class="rmssch-sub">' + esc(this.slotLabel(this.selectedSlot)) + '</p>' +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
-      '</div>');
+      '</div></div>');
   };
 
   // ---- utils -----------------------------------------------------

@@ -179,7 +179,7 @@
 .rmssch-confirm { text-align: center; padding: 8px 0; }
 .rmssch-confirm-check {
   width: 44px; height: 44px; border-radius: 50%;
-  background: color-mix(in srgb, var(--rmssch-accent) 22%, transparent);
+  background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast); display: inline-flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 10px;
 }
