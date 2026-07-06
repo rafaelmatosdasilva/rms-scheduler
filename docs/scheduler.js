@@ -35,7 +35,7 @@
   var LOCATION_TEXT = attr('data-location') || 'Details provided upon confirmation.';
   // In-person slots aren't auto-confirmed (e.g. require ticket validation).
   var PENDING_NOTE = attr('data-pending-note') ||
-    'In-person sessions require a valid Lisboa UX co-working ticket and are confirmed manually.';
+    'In-person sessions require a valid LisboaUX co-working ticket and are confirmed manually.';
   var ONLINE_NOTE = attr('data-online-note') || 'The Google Meet link will be sent to you by email.';
   var INPERSON_LOCATION = attr('data-inperson-location') || 'Casa do Impacto, Lisbon';
 
