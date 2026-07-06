@@ -16,7 +16,7 @@
 
   box-sizing: border-box;
   width: 100%;
-  max-width: 720px;
+  max-width: 880px;
   /* Constant height across every state — never resizes when switching views
      or navigating months/days. Overflow is handled by inner scroll areas. */
   height: var(--rmssch-height, 468px);
@@ -51,6 +51,26 @@
 .rmssch-title { font-size: 1.15rem; font-weight: 650; margin: 0 0 2px; }
 .rmssch-sub { font-size: 0.82rem; color: var(--rmssch-muted); margin: 0 0 16px; }
 .rmssch-narrow { width: 100%; max-width: 440px; margin: 0 auto; }
+
+/* ===================== SHELL + INFO PANEL ====================== */
+.rmssch-shell { display: flex; gap: 26px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }
+.rmssch-info {
+  flex: 0 0 236px; min-width: 0; display: flex; flex-direction: column; gap: 16px;
+  padding-right: 24px; border-right: 1px solid var(--rmssch-border);
+}
+.rmssch-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+
+.rmssch-host { display: flex; align-items: center; gap: 10px; }
+.rmssch-host-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.rmssch-host-name { font-size: 0.9rem; font-weight: 600; color: var(--rmssch-muted); }
+.rmssch-info-title { font-size: 1.3rem; font-weight: 700; line-height: 1.22; }
+.rmssch-info-meta { display: flex; flex-direction: column; gap: 12px; }
+.rmssch-info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; font-weight: 600; }
+.rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 500; }
+.rmssch-ic { flex: 0 0 18px; color: currentColor; opacity: 0.85; margin-top: 1px; }
+.rmssch-ic svg { width: 18px; height: 18px; display: block; }
+
+.rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
 
 /* ============================ PICKER ============================ */
 .rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }
@@ -135,8 +155,16 @@
 .rmssch-tz { margin-top: 12px; font-size: 0.7rem; color: var(--rmssch-muted); }
 
 /* -- stack on narrow embeds -- */
+/* Stack the info panel on top once there isn't room for it beside the picker.
+   Height goes auto here (content varies too much to pin at a fixed height). */
+@media (max-width: 760px) {
+  #rms-scheduler { height: auto; min-height: 460px; }
+  .rmssch-shell { flex-direction: column; gap: 18px; }
+  .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
+  .rmssch-info-title { font-size: 1.15rem; }
+}
 @media (max-width: 640px) {
-  #rms-scheduler { --rmssch-height: 620px; padding: 18px; }
+  #rms-scheduler { padding: 18px; }
   .rmssch-picker { flex-direction: column; gap: 16px; }
   .rmssch-cal { flex: 0 0 auto; }
   .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; border-top: 1px solid var(--rmssch-border); padding-top: 16px; }
@@ -177,7 +205,7 @@
 /* ============================ STATES =========================== */
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
 .rmssch-error { color: #b42318; }
-.rmssch-confirm { text-align: center; padding: 8px 0; }
+.rmssch-confirm { text-align: center; padding: 8px 0; margin: auto 0; }
 .rmssch-confirm-check {
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--rmssch-accent);

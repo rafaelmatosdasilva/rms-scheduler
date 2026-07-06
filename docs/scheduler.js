@@ -29,6 +29,17 @@
   var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
   var TITLE = attr('data-title') || 'Book a time';
   var VIEW_TZ = attr('data-timezone');
+  // Event-info side panel (Calendly-style). All optional.
+  var HOST_NAME = attr('data-host-name');
+  var HOST_AVATAR = attr('data-host-avatar');
+  var LOCATION_TEXT = attr('data-location') || 'Details provided upon confirmation.';
+
+  var ICON = {
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    video: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>'
+  };
   // Forced palette (independent of the viewer's OS light/dark), settable via
   // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
   // controlled separately (solid or transparent).
@@ -142,7 +153,7 @@
     var dows = DOW.map(function (n) { return '<span>' + n.toUpperCase() + '</span>'; }).join('');
     var cells = ''; for (var i = 0; i < 42; i++) cells += '<span class="rmssch-cell rmssch-skel"></span>';
     var pills = ''; for (var j = 0; j < 5; j++) pills += '<div class="rmssch-slot rmssch-skel"></div>';
-    this.frame('<div class="rmssch-picker rmssch-loading">' +
+    this.shell('<div class="rmssch-picker rmssch-loading">' +
       '<div class="rmssch-cal">' +
         '<div class="rmssch-cal-head"><div class="rmssch-cal-title"><strong>' + esc(monthName) + '</strong> ' + now.getFullYear() + '</div></div>' +
         '<div class="rmssch-cal-dows">' + dows + '</div>' +
@@ -205,10 +216,45 @@
     var d = this.durationLabel(slot);
     return this.fullLabel(slot.start) + (d ? ' · ' + d : '');
   };
+  // "10:00am – 10:20am, Tuesday, July 7, 2026"
+  Widget.prototype.slotRangeLabel = function (slot) {
+    var day = new Intl.DateTimeFormat(undefined, {
+      timeZone: this.viewTz, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    }).format(new Date(slot.start));
+    return this.timeLabel(slot.start) + (slot.end ? ' – ' + this.timeLabel(slot.end) : '') + ', ' + day;
+  };
 
   // ---- shells ----------------------------------------------------
 
   Widget.prototype.frame = function (html) { this.root.innerHTML = html; };
+
+  // Left event-info panel. Reflects the current selection.
+  Widget.prototype.infoHtml = function () {
+    var slot = this.selectedSlot;
+    function row(icon, text, muted) {
+      return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
+    }
+    var host = (HOST_AVATAR || HOST_NAME) ? '<div class="rmssch-host">' +
+      (HOST_AVATAR ? '<img class="rmssch-host-av" src="' + esc(HOST_AVATAR) + '" alt="">' : '') +
+      (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
+    var dur = slot ? this.durationLabel(slot) : '';
+    return '<div class="rmssch-info">' +
+      host +
+      '<div class="rmssch-info-title">' + esc(TITLE) + '</div>' +
+      '<div class="rmssch-info-meta">' +
+        (dur ? row(ICON.clock, dur) : '') +
+        row(ICON.video, LOCATION_TEXT) +
+        row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
+        (this.viewTz ? row(ICON.globe, this.viewTz.replace(/_/g, ' ')) : '') +
+      '</div>' +
+    '</div>';
+  };
+
+  // Wrap the current step's main content with the persistent info panel.
+  Widget.prototype.shell = function (mainHtml) {
+    this.root.classList.remove('rmssch-centered');
+    this.frame('<div class="rmssch-shell">' + this.infoHtml() + '<div class="rmssch-main">' + mainHtml + '</div></div>');
+  };
 
   Widget.prototype.card = function (inner) {
     // Simple centered states (loading / error / form / confirmation).
@@ -239,8 +285,7 @@
       this.card('<div class="rmssch-msg">No open times right now. Please check back later.</div>');
       return;
     }
-    this.root.classList.remove('rmssch-centered');
-    this.frame(
+    this.shell(
       '<div class="rmssch-picker">' +
         this.calendarHtml() +
         this.dayPanelHtml() +
@@ -332,7 +377,6 @@
         '</div>' +
       '</div>' +
       '<div class="rmssch-slots">' + slots + '</div>' +
-      '<div class="rmssch-tz">' + (this.viewTz ? esc(this.viewTz.replace(/_/g, ' ')) : '') + '</div>' +
     '</div>';
   };
 
@@ -340,8 +384,8 @@
 
   Widget.prototype.renderForm = function () {
     var self = this;
-    this.card(
-      '<div class="rmssch-selected">' + esc(this.slotLabel(this.selectedSlot)) + '</div>' +
+    this.shell(
+      '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email"></label></div>' +
@@ -353,9 +397,6 @@
           '<button class="rmssch-btn" type="submit">Confirm booking</button>' +
         '</div>' +
       '</form>');
-    // Top-align the form (match the calendar's top/bottom padding) rather than
-    // vertically centering it.
-    this.root.classList.remove('rmssch-centered');
     this.root.querySelector('[data-back]').onclick = function () { self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
   };
@@ -389,15 +430,13 @@
   };
 
   Widget.prototype.renderConfirm = function (name, email) {
-    // No outer title/subtitle on the confirmation — it has its own heading.
-    this.root.classList.add('rmssch-centered');
-    this.frame(
-      '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
+    // The details live in the info panel; the main area shows the confirmation.
+    this.shell(
+      '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">✓</div>' +
         '<div class="rmssch-title">You’re booked!</div>' +
-        '<p class="rmssch-sub">' + esc(this.slotLabel(this.selectedSlot)) + '</p>' +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
-      '</div></div>');
+      '</div>');
   };
 
   // ---- utils -----------------------------------------------------
