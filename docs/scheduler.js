@@ -157,6 +157,8 @@
     this.hour12 = detectHour12();  // default from the visitor's locale
     this.viewY = null;      // calendar month currently displayed
     this.viewM = null;
+    this.focusKey = null;   // day cell that owns keyboard focus (YYYY-MM-DD)
+    this._kbActive = false; // true once the grid has been keyboard-navigated
   }
 
   Widget.prototype.start = function () {
@@ -420,7 +422,15 @@
   Widget.prototype.bindPicker = function () {
     var self = this;
     this.root.querySelectorAll('[data-day]').forEach(function (b) {
-      b.onclick = function () { self.selectedDay = b.getAttribute('data-day'); self.updatePicker(); };
+      b.onclick = function () { self.selectedDay = self.focusKey = b.getAttribute('data-day'); self.updatePicker(); };
+    });
+    this.root.querySelectorAll('[data-jump]').forEach(function (b) {
+      b.onclick = function () {
+        var key = b.getAttribute('data-jump');
+        self.selectedDay = self.focusKey = key;
+        self.viewY = +key.split('-')[0]; self.viewM = +key.split('-')[1] - 1;
+        self.updatePicker();
+      };
     });
     this.root.querySelectorAll('[data-mon]').forEach(function (b) {
       b.onclick = function () {
@@ -435,10 +445,60 @@
     this.root.querySelectorAll('.rmssch-slot').forEach(function (b) {
       b.onclick = function () { self.selectedSlot = self.slotByStart[b.getAttribute('data-slot')]; self.renderForm(); };
     });
+    // Keyboard grid navigation (arrows / Home / End / PageUp-Down).
+    var grid = this.root.querySelector('.rmssch-cal-grid');
+    if (grid) grid.onkeydown = function (e) { self.onGridKey(e); };
     var self2 = this, strip = this.root.querySelector('.rmssch-daystrip');
     if (strip) strip.onscroll = function () { self2.updateStripFades(); };
     this.centerSelectedDay();
     this.updateStripFades();
+    // Restore keyboard focus to the roving cell after a re-render.
+    if (this._kbActive && grid) {
+      var fc = grid.querySelector('[data-date="' + (this.focusKey || this.selectedDay) + '"]');
+      if (fc) fc.focus();
+    }
+  };
+
+  Widget.prototype.onGridKey = function (e) {
+    var key = this.focusKey || this.selectedDay;
+    if (!key) return;
+    var wd = (new Date(+key.split('-')[0], +key.split('-')[1] - 1, +key.split('-')[2]).getDay() + 6) % 7; // Mon=0
+    var delta;
+    switch (e.key) {
+      case 'ArrowLeft': delta = -1; break;
+      case 'ArrowRight': delta = 1; break;
+      case 'ArrowUp': delta = -7; break;
+      case 'ArrowDown': delta = 7; break;
+      case 'Home': delta = -wd; break;
+      case 'End': delta = 6 - wd; break;
+      case 'PageUp': delta = -new Date(+key.split('-')[0], +key.split('-')[1] - 1, 0).getDate(); break;   // days in prev month
+      case 'PageDown': delta = new Date(+key.split('-')[0], +key.split('-')[1], 0).getDate(); break;      // days in this month
+      default: return;
+    }
+    e.preventDefault();
+    this._kbActive = true;
+    this.focusTo(addDays_(key, delta));
+  };
+
+  // Move keyboard focus to a day, paging the month if needed. Stays within the
+  // navigable range (current/first available month .. last available month).
+  Widget.prototype.focusTo = function (key) {
+    var idx = monthIndex_(key);
+    var now = new Date();
+    var minIdx = Math.max(monthIndex_(this.dayKeys[0]), now.getFullYear() * 12 + now.getMonth());
+    var lastIdx = monthIndex_(this.dayKeys[this.dayKeys.length - 1]);
+    if (idx < minIdx || idx > lastIdx) return;
+    this.focusKey = key;
+    if (idx !== this.viewY * 12 + this.viewM) {
+      this.viewY = Math.floor(idx / 12); this.viewM = idx % 12;
+      this.updatePicker();   // re-render; bindPicker restores focus via focusKey
+    } else {
+      var grid = this.root.querySelector('.rmssch-cal-grid');
+      if (!grid) return;
+      grid.querySelectorAll('[data-date]').forEach(function (c) { c.tabIndex = c.getAttribute('data-date') === key ? 0 : -1; });
+      var el = grid.querySelector('[data-date="' + key + '"]');
+      if (el) el.focus();
+    }
   };
 
   // Scroll the selected day pill to the middle of the horizontal strip (mobile).
@@ -462,48 +522,84 @@
     wrap.classList.toggle('can-right', strip.scrollLeft < max - 1);
   };
 
+  // First available day at or after the given month index (else the last one).
+  Widget.prototype.nextOpeningFrom = function (monthIdx) {
+    for (var i = 0; i < this.dayKeys.length; i++) {
+      if (monthIndex_(this.dayKeys[i]) >= monthIdx) return this.dayKeys[i];
+    }
+    return this.dayKeys[this.dayKeys.length - 1];
+  };
+
   Widget.prototype.calendarHtml = function () {
+    var self = this;
     var y = this.viewY, m = this.viewM;
     var monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date(y, m, 1));
     var offset = (new Date(y, m, 1).getDay() + 6) % 7;      // Monday-first
     var dim = new Date(y, m + 1, 0).getDate();
-    var todayKey = this.dayKeyFromIso(new Date().toISOString());
+    var now = new Date();
+    var todayKey = this.dayKeyFromIso(now.toISOString());
     var monthIdx = y * 12 + m;
     var firstIdx = monthIndex_(this.dayKeys[0]);
     var lastIdx = monthIndex_(this.dayKeys[this.dayKeys.length - 1]);
+    var currentIdx = now.getFullYear() * 12 + now.getMonth();
+    var minIdx = Math.max(firstIdx, currentIdx);   // never page into the past
+    var monthHasAvail = this.dayKeys.some(function (k) { return monthIndex_(k) === monthIdx; });
+    // The cell that owns keyboard focus (roving tabindex). Falls back to the
+    // selected day, or the first available day in this month.
+    var focusKey = this.focusKey || this.selectedDay;
 
     var MAX_DOTS = 6;
     var cells = '';
-    for (var b = 0; b < offset; b++) cells += '<span class="rmssch-cell rmssch-cell--empty"></span>';
+    for (var b = 0; b < offset; b++) cells += '<span class="rmssch-cell rmssch-cell--empty" aria-hidden="true"></span>';
     for (var d = 1; d <= dim; d++) {
       var key = y + '-' + pad(m + 1) + '-' + pad(d);
+      var isToday = key === todayKey ? ' is-today' : '';
+      var label = new Intl.DateTimeFormat(undefined, { timeZone: this.viewTz, weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(y, m, d));
       if (this.byDay[key]) {
         var sel = key === this.selectedDay ? ' is-sel' : '';
+        var count = this.byDay[key].length;
         // One accent dot per available slot that day (capped).
-        var n = Math.min(this.byDay[key].length, MAX_DOTS), dots = '';
+        var n = Math.min(count, MAX_DOTS), dots = '';
         for (var q = 0; q < n; q++) dots += '<i></i>';
-        cells += '<button type="button" class="rmssch-cell is-avail' + sel + '" data-day="' + key + '">' +
+        cells += '<button type="button" role="gridcell" class="rmssch-cell is-avail' + isToday + sel + '"' +
+          ' data-day="' + key + '" data-date="' + key + '"' +
+          ' aria-selected="' + (sel ? 'true' : 'false') + '"' +
+          ' aria-label="' + esc(label + ', ' + count + (count === 1 ? ' time available' : ' times available')) + '"' +
+          ' tabindex="' + (key === focusKey ? '0' : '-1') + '">' +
           '<span class="rmssch-cell-num">' + d + '</span><span class="rmssch-cell-dots">' + dots + '</span></button>';
       } else {
-        var today = key === todayKey ? '<span class="rmssch-cell-dot"></span>' : '';
-        cells += '<span class="rmssch-cell is-off">' + d + today + '</span>';
+        cells += '<span role="gridcell" class="rmssch-cell is-off' + isToday + '"' +
+          ' data-date="' + key + '" aria-disabled="true" aria-label="' + esc(label + ', no times') + '"' +
+          ' tabindex="-1">' + d + '</span>';
       }
     }
     // Pad to a constant 6 rows (42 cells) so the grid height never changes
     // between months (5- vs 6-week months).
-    for (var t = offset + dim; t < 42; t++) cells += '<span class="rmssch-cell rmssch-cell--empty"></span>';
+    for (var t = offset + dim; t < 42; t++) cells += '<span class="rmssch-cell rmssch-cell--empty" aria-hidden="true"></span>';
+
+    // Empty-month guidance: point visitors at the next real opening.
+    var emptyHtml = '';
+    if (!monthHasAvail) {
+      var jumpKey = this.nextOpeningFrom(monthIdx);
+      var jumpLabel = new Intl.DateTimeFormat(undefined, { timeZone: this.viewTz, weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(this.byDay[jumpKey][0].start));
+      emptyHtml = '<div class="rmssch-cal-empty">' +
+        '<span>No times in ' + esc(monthName) + '.</span>' +
+        '<button type="button" class="rmssch-cal-jump" data-jump="' + esc(jumpKey) + '">Next opening · ' + esc(jumpLabel) + ' →</button>' +
+      '</div>';
+    }
 
     var dows = DOW.map(function (n) { return '<span>' + n.toUpperCase() + '</span>'; }).join('');
     return '<div class="rmssch-cal">' +
       '<div class="rmssch-cal-head">' +
         '<div class="rmssch-cal-title"><strong>' + esc(monthName) + '</strong> ' + y + '</div>' +
         '<div class="rmssch-cal-nav">' +
-          '<button type="button" data-mon="prev" aria-label="Previous month"' + (monthIdx <= firstIdx ? ' disabled' : '') + '>‹</button>' +
+          '<button type="button" data-mon="prev" aria-label="Previous month"' + (monthIdx <= minIdx ? ' disabled' : '') + '>‹</button>' +
           '<button type="button" data-mon="next" aria-label="Next month"' + (monthIdx >= lastIdx ? ' disabled' : '') + '>›</button>' +
         '</div>' +
       '</div>' +
-      '<div class="rmssch-cal-dows">' + dows + '</div>' +
-      '<div class="rmssch-cal-grid">' + cells + '</div>' +
+      '<div class="rmssch-cal-dows" aria-hidden="true">' + dows + '</div>' +
+      '<div class="rmssch-cal-grid" role="grid" aria-label="Choose a day">' + cells + '</div>' +
+      emptyHtml +
     '</div>';
   };
 
@@ -520,7 +616,8 @@
     var slots = daySlots.map(function (slot) {
       var ti = slotTypeInfo(slot.type);
       var sub = [self.durationLabel(slot), ti ? ti.label : ''].filter(Boolean).join(' · ');
-      return '<button type="button" class="rmssch-slot" data-slot="' + esc(slot.start) + '">' +
+      var aria = 'Book ' + self.timeLabel(slot.start) + (sub ? ', ' + sub : '');
+      return '<button type="button" class="rmssch-slot" data-slot="' + esc(slot.start) + '" aria-label="' + esc(aria) + '">' +
         '<span class="rmssch-slot-dot"></span>' +
         '<span class="rmssch-slot-time">' + esc(self.timeLabel(slot.start)) + '</span>' +
         (sub ? '<span class="rmssch-slot-dur">' + esc(sub) + '</span>' : '') +
@@ -650,6 +747,12 @@
 
   function monthIndex_(key) { var p = key.split('-'); return (+p[0]) * 12 + (+p[1] - 1); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  // Shift a YYYY-MM-DD key by a number of days (calendar-safe, month/year rollover).
+  function addDays_(key, delta) {
+    var p = key.split('-'), dt = new Date(+p[0], +p[1] - 1, +p[2]);
+    dt.setDate(dt.getDate() + delta);
+    return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate());
+  }
   function showErr(el, msg) { el.textContent = msg; el.hidden = false; }
   // Toggle the red invalid state on a field (border + its "*" asterisk).
   function markField(input, bad) {

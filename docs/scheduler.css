@@ -134,12 +134,37 @@
 .rmssch-slot:hover,
 .rmssch-back:hover,
 .rmssch-daypill:hover { outline-color: var(--rmssch-accent); }
+/* Keyboard focus ring (never shown on mouse click). */
+.rmssch-cell.is-avail:focus-visible,
+.rmssch-slot:focus-visible,
+.rmssch-back:focus-visible,
+.rmssch-btn:focus-visible,
+.rmssch-daypill:focus-visible { outline-color: var(--rmssch-accent); }
+.rmssch-cell.is-off:focus-visible { outline: 2px solid var(--rmssch-border); outline-offset: -2px; }
+.rmssch-cal-nav button:focus-visible,
+.rmssch-cal-jump:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
+.rmssch-cell:focus { outline: none; }   /* prefer :focus-visible only */
+/* Today: subtle ring, kept when the day is also available (selected still wins). */
+.rmssch-cell.is-today { box-shadow: inset 0 0 0 1.5px var(--rmssch-border); }
+.rmssch-cell.is-today.is-sel { box-shadow: none; }
 .rmssch-cell.is-sel { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
 .rmssch-cell-dot {
   position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
   width: 4px; height: 4px; border-radius: 50%; background: var(--rmssch-accent);
 }
 .rmssch-cell.is-sel .rmssch-cell-dot { background: var(--rmssch-accent-contrast); }
+
+/* Empty-month guidance + "next opening" jump. */
+.rmssch-cal-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  margin-top: 12px; font-size: 0.82rem; color: var(--rmssch-muted); text-align: center;
+}
+.rmssch-cal-jump {
+  padding: 8px 14px; border-radius: 9px; font-size: 0.82rem; font-weight: 650;
+  color: var(--rmssch-fg); background: var(--rmssch-surface);
+  border: 1px solid transparent; outline: 2px solid transparent; outline-offset: -2px;
+}
+.rmssch-cal-jump:hover { outline-color: var(--rmssch-accent); }
 
 /* -- day / time panel -- */
 .rmssch-day {
