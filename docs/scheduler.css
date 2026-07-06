@@ -11,7 +11,7 @@
   --rmssch-fg: #1a1c20;
   --rmssch-muted: #6b7280;
   --rmssch-border: #e4e7ec;
-  --rmssch-radius: 16px;
+  --rmssch-radius: 10px;
   --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
@@ -24,7 +24,7 @@
   font-family: var(--rmssch-font);
   color: var(--rmssch-fg);
   background: var(--rmssch-bg);
-  border: 1px solid var(--rmssch-border);
+  border: none;
   border-radius: var(--rmssch-radius);
   padding: 22px;
   display: flex;
@@ -68,10 +68,10 @@
 .rmssch-host-name { font-size: 0.9rem; font-weight: 600; color: var(--rmssch-muted); }
 .rmssch-info-title { font-size: 1.3rem; font-weight: 700; line-height: 1.22; }
 .rmssch-info-meta { display: flex; flex-direction: column; gap: 12px; }
-.rmssch-info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; font-weight: 600; }
+.rmssch-info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.76rem; font-weight: 600; }
 .rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 500; }
-.rmssch-ic { flex: 0 0 18px; color: currentColor; opacity: 0.85; margin-top: 1px; }
-.rmssch-ic svg { width: 18px; height: 18px; display: block; }
+.rmssch-ic { flex: 0 0 16px; color: currentColor; opacity: 0.85; margin-top: 1px; }
+.rmssch-ic svg { width: 16px; height: 16px; display: block; }
 
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
 
@@ -228,7 +228,7 @@
 /* ============================ STATES =========================== */
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
 .rmssch-error { color: #b42318; }
-.rmssch-confirm { text-align: center; padding: 8px 0; margin: auto 0; }
+.rmssch-confirm { text-align: center; padding: 8px 0; }
 .rmssch-confirm-check {
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--rmssch-accent);

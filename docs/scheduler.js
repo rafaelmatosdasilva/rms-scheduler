@@ -164,14 +164,27 @@
     var monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(now);
     var dows = DOW.map(function (n) { return '<span>' + n.toUpperCase() + '</span>'; }).join('');
     var cells = ''; for (var i = 0; i < 42; i++) cells += '<span class="rmssch-cell rmssch-skel"></span>';
-    var pills = ''; for (var j = 0; j < 5; j++) pills += '<div class="rmssch-slot rmssch-skel"></div>';
-    this.shell('<div class="rmssch-picker rmssch-loading">' +
+    var pills = ''; for (var j = 0; j < 6; j++) pills += '<div class="rmssch-slot rmssch-skel"></div>';
+    var strip = ''; for (var k = 0; k < 8; k++) strip += '<span class="rmssch-daypill rmssch-skel" style="height:52px"></span>';
+    // Mirror the loaded picker structure exactly (same header/nav/day-head) so
+    // nothing shifts when real data replaces the skeleton.
+    this.shell('<div class="rmssch-picker">' +
       '<div class="rmssch-cal">' +
-        '<div class="rmssch-cal-head"><div class="rmssch-cal-title"><strong>' + esc(monthName) + '</strong> ' + now.getFullYear() + '</div></div>' +
+        '<div class="rmssch-cal-head">' +
+          '<div class="rmssch-cal-title"><strong>' + esc(monthName) + '</strong> ' + now.getFullYear() + '</div>' +
+          '<div class="rmssch-cal-nav"><button type="button" disabled>‹</button><button type="button" disabled>›</button></div>' +
+        '</div>' +
         '<div class="rmssch-cal-dows">' + dows + '</div>' +
         '<div class="rmssch-cal-grid">' + cells + '</div>' +
       '</div>' +
-      '<div class="rmssch-day"><div class="rmssch-slots">' + pills + '</div></div>' +
+      '<div class="rmssch-day">' +
+        '<div class="rmssch-daystrip">' + strip + '</div>' +
+        '<div class="rmssch-day-head">' +
+          '<div class="rmssch-day-title rmssch-skel" style="width:72px;height:22px"></div>' +
+          '<div class="rmssch-seg"><button type="button" class="is-on">12h</button><button type="button">24h</button></div>' +
+        '</div>' +
+        '<div class="rmssch-slots">' + pills + '</div>' +
+      '</div>' +
     '</div>');
   };
 
