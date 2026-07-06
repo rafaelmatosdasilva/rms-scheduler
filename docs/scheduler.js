@@ -592,7 +592,11 @@
     if (badName || badEmail || badNotes) {
       var first = form.querySelector('.rmssch-field.is-invalid input, .rmssch-field.is-invalid textarea');
       if (first) first.focus();
-      return showErr(errEl, badEmail && email ? 'Please enter a valid email.' : 'Please fill in the required fields.');
+      // Red field highlighting is enough for empty fields; only show a message
+      // when a non-empty email is malformed.
+      if (badEmail && email) showErr(errEl, 'Please enter a valid email.');
+      else errEl.hidden = true;
+      return;
     }
     errEl.hidden = true;
 
