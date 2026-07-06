@@ -248,6 +248,8 @@
   #rms-scheduler { padding: 14px; }
   .rmssch-daystrip-wrap { margin-left: -14px; margin-right: -14px; }
   .rmssch-daystrip { padding-left: 14px; padding-right: 14px; }
+  /* Give the Session-goals field a bit more room on the tightest screens. */
+  .rmssch-field textarea { min-height: 106px; }
 }
 
 /* ============================ FORM ============================= */
