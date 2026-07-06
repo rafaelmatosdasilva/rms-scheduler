@@ -301,21 +301,20 @@
     // Feedback progressively: day selected -> date + type; slot selected -> + time + duration.
     var refIso = slot ? slot.start : (dayKey && this.byDay[dayKey] ? this.byDay[dayKey][0].start : null);
     var type = slot ? slot.type : this.dayType(dayKey);
-    var when;
-    if (refIso) {
-      var timeStr = slot ? this.timeRangeLabel(slot) : '';
-      when = '<span class="rmssch-when"><span>' + esc(this.dateLabel({ start: refIso })) + '</span>' +
-        (timeStr ? '<span class="rmssch-when-time">' + esc(timeStr) + '</span>' : '') + '</span>';
-    } else {
-      when = esc('Select a date & time');
-    }
-    var dur = slot ? this.durationLabel(slot) : '';
+
+    // 1) date  2) location  3) time range + duration (single clock line)
+    var dateRow = refIso
+      ? row(ICON.cal, esc(this.dateLabel({ start: refIso })))
+      : row(ICON.cal, esc('Select a date & time'), true);
     var locRow = '';
     if (type === 'inperson') locRow = row(ICON.pin, esc(INPERSON_LOCATION));
     else if (type === 'online') locRow = row(ICON.video, esc('Google Meet'));
-    return row(ICON.cal, when, !refIso) +
-      (dur ? row(ICON.clock, esc(dur)) : '') +
-      locRow;
+    var timeRow = '';
+    if (slot) {
+      var d = this.durationLabel(slot);
+      timeRow = row(ICON.clock, esc(this.timeRangeLabel(slot) + (d ? ', ' + d : '')));
+    }
+    return dateRow + locRow + timeRow;
   };
 
   // Left event-info panel.
