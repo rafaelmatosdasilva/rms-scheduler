@@ -62,7 +62,8 @@
 .rmssch-cal-title strong { color: var(--rmssch-fg); font-weight: 700; }
 .rmssch-cal-nav { display: flex; gap: 6px; }
 .rmssch-cal-nav button {
-  width: 32px; height: 32px; border-radius: 8px; font-size: 1.1rem; line-height: 1;
+  width: 40px; height: 40px; border-radius: 10px; font-size: 1.15rem; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
   color: var(--rmssch-muted); border: 1px solid transparent;
 }
 .rmssch-cal-nav button:hover:not(:disabled) { border-color: var(--rmssch-border); color: var(--rmssch-fg); }
@@ -109,8 +110,9 @@
   border-radius: 9px; padding: 3px;
 }
 .rmssch-seg button {
-  font-size: 0.78rem; font-weight: 600; padding: 4px 12px; border-radius: 7px;
-  color: var(--rmssch-muted);
+  min-width: 44px; min-height: 40px; padding: 0 14px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 600; color: var(--rmssch-muted);
 }
 .rmssch-seg button.is-on { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
 
