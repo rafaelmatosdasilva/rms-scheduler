@@ -40,10 +40,10 @@ var CONFIG = {
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
   MIN_NOTICE_MINUTES: 120,          // earliest bookable slot from "now"
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
-  // Keep the availability event on booking (don't delete it). The booking on the
-  // bookings calendar hides the slot via the busy-check; if that booking is later
-  // CANCELED, the slot automatically becomes available again.
-  CONSUME_SLOT: false,
+  // Delete the availability event on booking so the slot is removed at the source
+  // and can never be double-booked (the busy-check alone misses advanced-API/Meet
+  // bookings). To re-open a slot after a cancellation, re-add it to the calendar.
+  CONSUME_SLOT: true,
   CACHE_SECONDS: 45,                // cache availability this long (speeds loads)
 
   EVENT_TITLE: 'Meeting with {name}',

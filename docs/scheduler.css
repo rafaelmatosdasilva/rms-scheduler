@@ -269,7 +269,7 @@
 .rmssch-note {
   display: inline-flex; gap: 8px; align-items: flex-start; align-self: flex-start;
   width: fit-content; max-width: 100%;
-  font-size: 0.68rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
+  font-size: 0.74rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
   background: color-mix(in srgb, var(--rmssch-accent) 5%, transparent); border: none;
   border-radius: 9px; padding: 10px 11px; margin-bottom: 0;
 }
