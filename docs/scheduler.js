@@ -569,6 +569,10 @@
       '</form>');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
+    // Clear a field's invalid (red) state as soon as the visitor edits it.
+    this.root.querySelectorAll('.rmssch-form input, .rmssch-form textarea').forEach(function (el) {
+      el.addEventListener('input', function () { markField(el, false); });
+    });
   };
 
   Widget.prototype.submit = function (form) {
@@ -576,9 +580,20 @@
     var errEl = form.querySelector('[data-err]');
     var name = form.name.value.trim();
     var email = form.email.value.trim();
-    if (!name) return showErr(errEl, 'Please enter your name.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(errEl, 'Please enter a valid email.');
-    if (!form.notes.value.trim()) return showErr(errEl, 'Please share your session goals.');
+    var notes = form.notes.value.trim();
+
+    // Validate all required fields at once; flag every empty/invalid one in red.
+    var badName = !name;
+    var badEmail = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    var badNotes = !notes;
+    markField(form.name, badName);
+    markField(form.email, badEmail);
+    markField(form.notes, badNotes);
+    if (badName || badEmail || badNotes) {
+      var first = form.querySelector('.rmssch-field.is-invalid input, .rmssch-field.is-invalid textarea');
+      if (first) first.focus();
+      return showErr(errEl, badEmail && email ? 'Please enter a valid email.' : 'Please fill in the required fields.');
+    }
     errEl.hidden = true;
 
     var btn = form.querySelector('button[type="submit"]');
@@ -632,6 +647,11 @@
   function monthIndex_(key) { var p = key.split('-'); return (+p[0]) * 12 + (+p[1] - 1); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function showErr(el, msg) { el.textContent = msg; el.hidden = false; }
+  // Toggle the red invalid state on a field (border + its "*" asterisk).
+  function markField(input, bad) {
+    var field = input.closest && input.closest('.rmssch-field');
+    if (field) field.classList.toggle('is-invalid', !!bad);
+  }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];

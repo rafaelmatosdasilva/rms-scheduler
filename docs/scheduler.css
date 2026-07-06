@@ -263,6 +263,12 @@
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
+/* Invalid (empty required) state: red border + red asterisk. */
+.rmssch-field.is-invalid .rmssch-req { color: #e5484d; }
+.rmssch-field.is-invalid input,
+.rmssch-field.is-invalid textarea { border-color: #e5484d; background: color-mix(in srgb, #e5484d 6%, var(--rmssch-surface)); }
+.rmssch-field.is-invalid input:focus,
+.rmssch-field.is-invalid textarea:focus { outline-color: #e5484d; }
 
 .rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
 /* Info note (e.g. in-person pending confirmation). */
