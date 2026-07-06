@@ -34,7 +34,7 @@ var CONFIG = {
   AVAILABILITY_CALENDAR_ID: 'c_b4f6f948e96d142d1a632ea961e94715ea838de13579dc63bbb272a8a87c247c@group.calendar.google.com',
 
   // Calendar that confirmed bookings are written to (with the guest invite).
-  BOOKING_CALENDAR_ID: 'primary',   // 'primary' or a specific calendar id/email
+  BOOKING_CALENDAR_ID: 'c_6fcad1e1845ac5b311edec0bd7b5ccc072849f2d71a687a78ad0eb51a5fc8fde@group.calendar.google.com',
 
   TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
