@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      max-width: 720px; margin: 0 auto; padding: 48px 20px; line-height: 1.55;
-      color: #1a1c20;
+      margin: 0 auto; padding: 40px 20px; line-height: 1.55; color: #1a1c20;
+      max-width: 1240px;
     }
     h1 { margin: 0 0 4px; }
     .lede { color: #6b7280; margin-top: 0; }
@@ -17,41 +17,46 @@
       padding: 14px 16px; overflow-x: auto; font-size: 0.85rem;
     }
     hr { border: 0; border-top: 1px solid #e4e7ec; margin: 40px 0; }
+
+    /* Resizable test harness: drag the bottom-right corner to change width. */
+    .resizer {
+      resize: both; overflow: auto;
+      width: 1000px; height: 660px;
+      min-width: 320px; min-height: 420px; max-width: 1200px;
+      border: 1px dashed #cfd4dc; border-radius: 12px; background: #0f1115;
+    }
+    .resizer iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .hint { font-size: 0.85rem; color: #6b7280; margin: 8px 0 0; }
+
     @media (prefers-color-scheme: dark) {
       body { background: #0f1115; color: #f2f4f7; }
       pre { background: #16181d; border-color: #2a2e37; }
-      .lede { color: #98a2b3; }
+      .lede, .hint { color: #98a2b3; }
+      .resizer { border-color: #2a2e37; }
     }
   </style>
 </head>
 <body>
   <h1>Booking widget</h1>
-  <p class="lede">Live demo of the embeddable scheduler. Pick a slot below to book a real event.</p>
+  <p class="lede">Live demo. <strong>Drag the bottom-right corner of the frame</strong> to resize it and watch the widget respond at real widths (this is a true iframe, so the breakpoints fire exactly as they will in Figma).</p>
 
-  <!-- ==== THE WIDGET ==== -->
-  <div id="rms-scheduler"></div>
-  <script
-    src="scheduler.js"
-    data-endpoint="https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec"
-    data-title="Book an online call with Rafael Matos da Silva"
-    data-host-avatar="avatar.png"
-    data-location="Google Meet link sent after you book."></script>
-  <!-- ==================== -->
+  <div class="resizer">
+    <iframe src="embed.html" title="Booking widget" loading="lazy"></iframe>
+  </div>
+  <p class="hint">Wide → month calendar + info panel · below ~760px → info panel stacks on top · below ~640px → month grid becomes a horizontal day strip.</p>
 
   <hr>
 
   <h2>Embed it on your site</h2>
-  <p>Copy this snippet anywhere in your page. Replace the endpoint with your deployed Apps Script URL.</p>
-  <pre>&lt;div id="rms-scheduler"&gt;&lt;/div&gt;
-&lt;script
-  src="https://YOUR-USERNAME.github.io/rms-scheduler/scheduler.js"
-  data-endpoint="https://script.google.com/macros/s/XXXX/exec"
-  data-title="Book a time with me"&gt;&lt;/script&gt;</pre>
+  <p>Drop this iframe wherever you want the widget (e.g. a Figma Sites embed block):</p>
+  <pre>&lt;iframe
+  src="https://rafaelmatosdasilva.github.io/rms-scheduler/embed.html"
+  width="1000" height="660" style="border:0" title="Book a time"&gt;&lt;/iframe&gt;</pre>
 
-  <p>Re-theme by overriding the CSS variables:</p>
-  <pre>#rms-scheduler {
-  --rmssch-accent: #e5484d;
-  --rmssch-radius: 16px;
-}</pre>
+  <p>Theme it via URL params (<code>%23</code> = <code>#</code>):</p>
+  <pre>embed.html?accent=%23ff5c00&amp;bg=%23111827
+embed.html?theme=light&amp;bg=%23ffffffCC   (translucent white card)
+embed.html?bg=transparent               (see-through, over a dark section)</pre>
+  <p class="hint">Params: <code>accent</code>, <code>contrast</code>, <code>dot</code>, <code>bg</code>, <code>surface</code>, <code>fg</code>, <code>muted</code>, <code>border</code>, <code>theme</code>, <code>tz</code>.</p>
 </body>
 </html>
