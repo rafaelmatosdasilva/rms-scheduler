@@ -498,8 +498,7 @@
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
-      (allInPerson ? noteHtml(PENDING_NOTE) : '') +
-      '<div class="rmssch-slots">' + slots + '</div>' +
+      '<div class="rmssch-slots">' + (allInPerson ? noteHtml(PENDING_NOTE) : '') + slots + '</div>' +
     '</div>';
   };
 

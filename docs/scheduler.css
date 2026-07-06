@@ -169,7 +169,7 @@
 
 .rmssch-slots {
   display: flex; flex-direction: column; gap: 10px;
-  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
 }
 .rmssch-slot {
   position: relative; width: 100%; padding: 13px; border-radius: 12px;
@@ -241,7 +241,7 @@
 .rmssch-note {
   display: flex; gap: 8px; align-items: flex-start;
   font-size: 0.68rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
-  background: var(--rmssch-surface); border-radius: 9px; padding: 10px 12px; margin-bottom: 14px;
+  background: none; border: 1px solid var(--rmssch-border); border-radius: 12px; padding: 12px; margin-bottom: 4px;
 }
 .rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
 .rmssch-note-ic svg { width: 14px; height: 14px; display: block; }
