@@ -441,7 +441,7 @@
           '<button class="rmssch-btn" type="submit">Confirm booking</button>' +
         '</div>' +
       '</form>');
-    this.root.querySelector('[data-back]').onclick = function () { self.renderPicker(); };
+    this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
   };
 
