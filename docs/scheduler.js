@@ -279,23 +279,36 @@
     return this.timeLabel(slot.start) + (slot.end ? ' – ' + this.timeLabel(slot.end) : '');
   };
 
+  // The shared type of a day's slots ('online'/'inperson'), or '' if mixed/none.
+  Widget.prototype.dayType = function (key) {
+    var s = key && this.byDay[key];
+    if (!s || !s.length) return '';
+    var t = s[0].type;
+    for (var i = 1; i < s.length; i++) if (s[i].type !== t) return '';
+    return t || '';
+  };
+
   Widget.prototype.metaRows = function () {
-    var slot = this.selectedSlot;
+    var slot = this.selectedSlot, dayKey = this.selectedDay;
     function row(icon, inner, muted) {
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + inner + '</span></div>';
     }
-    // Date on the first line, time range below it.
-    var when = slot
-      ? '<span class="rmssch-when"><span>' + esc(this.dateLabel(slot)) + '</span><span class="rmssch-when-time">' + esc(this.timeRangeLabel(slot)) + '</span></span>'
-      : esc('Select a date & time');
+    // Feedback progressively: day selected -> date + type; slot selected -> + time + duration.
+    var refIso = slot ? slot.start : (dayKey && this.byDay[dayKey] ? this.byDay[dayKey][0].start : null);
+    var type = slot ? slot.type : this.dayType(dayKey);
+    var when;
+    if (refIso) {
+      var timeStr = slot ? this.timeRangeLabel(slot) : '';
+      when = '<span class="rmssch-when"><span>' + esc(this.dateLabel({ start: refIso })) + '</span>' +
+        (timeStr ? '<span class="rmssch-when-time">' + esc(timeStr) + '</span>' : '') + '</span>';
+    } else {
+      when = esc('Select a date & time');
+    }
     var dur = slot ? this.durationLabel(slot) : '';
-    var ti = slot ? slotTypeInfo(slot.type) : null;
-    // Only show the location once a typed slot is picked (avoids implying
-    // "Google Meet" before the visitor has chosen online vs in-person).
     var locRow = '';
-    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, esc(INPERSON_LOCATION));
-    else if (ti && ti.key === 'online') locRow = row(ICON.video, esc('Google Meet'));
-    return row(ICON.cal, when, !slot) +
+    if (type === 'inperson') locRow = row(ICON.pin, esc(INPERSON_LOCATION));
+    else if (type === 'online') locRow = row(ICON.video, esc('Google Meet'));
+    return row(ICON.cal, when, !refIso) +
       (dur ? row(ICON.clock, esc(dur)) : '') +
       locRow;
   };
@@ -362,6 +375,10 @@
     var strip = main.querySelector('.rmssch-daystrip');
     if (strip) strip.scrollLeft = prev;      // then centerSelectedDay animates from here (both ways)
     this.bindPicker();
+    // Refresh the info panel's meta (date + type) for the newly selected day,
+    // leaving the avatar/title in place.
+    var meta = this.root.querySelector('.rmssch-info-meta');
+    if (meta) meta.innerHTML = this.metaRows();
   };
 
   Widget.prototype.bindPicker = function () {
