@@ -34,11 +34,13 @@
   var HOST_AVATAR = attr('data-host-avatar');
   var LOCATION_TEXT = attr('data-location') || 'Details provided upon confirmation.';
 
+  // width/height on the <svg> so they never render full-size before CSS loads.
+  var SV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">';
   var ICON = {
-    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-    video: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
-    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
-    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>'
+    clock: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    video: SV + '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
+    cal: SV + '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+    globe: SV + '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>'
   };
   // Forced palette (independent of the viewer's OS light/dark), settable via
   // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
@@ -245,7 +247,7 @@
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
     }
     var host = (HOST_AVATAR || HOST_NAME) ? '<div class="rmssch-host">' +
-      (HOST_AVATAR ? '<img class="rmssch-host-av" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+      (HOST_AVATAR ? '<img class="rmssch-host-av" width="40" height="40" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     return '<div class="rmssch-info">' +
