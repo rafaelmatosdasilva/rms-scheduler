@@ -90,6 +90,8 @@
     var href = script && script.getAttribute('data-css');
     if (!href && script && script.src) href = script.src.replace(/scheduler\.js(\?.*)?$/, 'scheduler.css');
     if (!href) return;
+    // Cache-bust so style updates always take effect (GitHub Pages caches ~10min).
+    href += (href.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now();
     if (document.querySelector('link[data-rmssch]')) return;
     var link = document.createElement('link');
     link.rel = 'stylesheet';

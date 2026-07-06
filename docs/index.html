@@ -41,8 +41,9 @@
   <p class="lede">Live demo. <strong>Drag the bottom-right corner of the frame</strong> to resize it and watch the widget respond at real widths (this is a true iframe, so the breakpoints fire exactly as they will in Figma).</p>
 
   <div class="resizer">
-    <iframe src="embed.html" title="Booking widget" loading="lazy"></iframe>
+    <iframe id="demoframe" title="Booking widget"></iframe>
   </div>
+  <script>document.getElementById('demoframe').src = 'embed.html?_=' + Date.now();</script>
   <p class="hint">Wide → month calendar + info panel · below ~760px → info panel stacks on top · below ~640px → month grid becomes a horizontal day strip.</p>
 
   <hr>
