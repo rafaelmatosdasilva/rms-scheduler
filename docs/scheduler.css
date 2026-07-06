@@ -63,7 +63,7 @@
 .rmssch-info-head { display: flex; flex-direction: column; gap: 14px; }
 .rmssch-host { display: flex; align-items: center; gap: 10px; }
 .rmssch-host-av {
-  width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+  width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
   background: var(--rmssch-accent); /* shows behind transparent-cutout photos */
 }
 .rmssch-host-name { font-size: 0.9rem; font-weight: 600; color: var(--rmssch-muted); }
@@ -185,6 +185,7 @@
   .rmssch-info-title { font-size: 1.15rem; }
   /* Avatar sits beside the title when the panel is stacked on top. */
   .rmssch-info-head { flex-direction: row; align-items: center; gap: 14px; }
+  .rmssch-host-av { width: 40px; height: 40px; }
 }
 /* Phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 640px) {

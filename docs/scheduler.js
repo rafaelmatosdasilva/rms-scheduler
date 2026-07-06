@@ -261,15 +261,15 @@
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
     }
     var host = (HOST_AVATAR || HOST_NAME) ? '<div class="rmssch-host">' +
-      (HOST_AVATAR ? '<img class="rmssch-host-av" width="40" height="40" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+      (HOST_AVATAR ? '<img class="rmssch-host-av" width="56" height="56" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     return '<div class="rmssch-info">' +
       '<div class="rmssch-info-head">' + host + '<div class="rmssch-info-title">' + esc(TITLE) + '</div></div>' +
       '<div class="rmssch-info-meta">' +
-        (dur ? row(ICON.clock, dur) : '') +
         row(ICON.video, LOCATION_TEXT) +
         row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
+        (dur ? row(ICON.clock, dur) : '') +   // duration below the date/time
         (this.viewTz ? row(ICON.globe, this.viewTz.replace(/_/g, ' ')) : '') +
       '</div>' +
     '</div>';
