@@ -222,6 +222,8 @@
   border-radius: 9px;
   background: var(--rmssch-bg); color: inherit;
 }
+.rmssch-field input::placeholder,
+.rmssch-field textarea::placeholder { color: var(--rmssch-muted); }
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
 .rmssch-field textarea { resize: vertical; min-height: 64px; }

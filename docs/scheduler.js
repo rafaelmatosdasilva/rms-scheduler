@@ -274,14 +274,17 @@
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     var ti = slot ? slotTypeInfo(slot.type) : null;
-    // In-person slots show a pin + "In person"; everything else keeps the default (Meet) line.
-    var locRow = (ti && ti.key === 'inperson') ? row(ti.icon, ti.label) : row(ICON.video, LOCATION_TEXT);
+    // Location line, below the date, changing with the selection.
+    var locRow;
+    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, 'In person');
+    else if (ti && ti.key === 'online') locRow = row(ICON.video, 'Google Meet');
+    else locRow = row(ICON.video, LOCATION_TEXT);
     return '<div class="rmssch-info">' +
       '<div class="rmssch-info-head">' + host + '<div class="rmssch-info-title">' + esc(TITLE) + '</div></div>' +
       '<div class="rmssch-info-meta">' +
-        locRow +
         row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
         (dur ? row(ICON.clock, dur) : '') +   // duration below the date/time
+        locRow +                              // location below the date
         (this.viewTz ? row(ICON.globe, this.viewTz.replace(/_/g, ' ')) : '') +
       '</div>' +
     '</div>';
@@ -440,8 +443,8 @@
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name"></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
