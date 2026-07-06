@@ -55,7 +55,7 @@ var CONFIG = {
   // in the Apps Script editor (Services + -> Google Calendar API). If it isn't
   // enabled the booking still succeeds — just without the Meet link.
   ADD_MEET_FOR_ONLINE: true,
-  IN_PERSON_LOCATION: ''            // e.g. 'Rua Example 12, Lisboa'
+  IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon'
 };
 // -------------------------------------------------------------------
 

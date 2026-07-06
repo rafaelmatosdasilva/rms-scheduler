@@ -36,6 +36,8 @@
   // In-person slots aren't auto-confirmed (e.g. require ticket validation).
   var PENDING_NOTE = attr('data-pending-note') ||
     'In-person sessions require a valid Lisboa UX co-working ticket and are confirmed manually.';
+  var ONLINE_NOTE = attr('data-online-note') || 'The Google Meet link will be sent to you by email.';
+  var INPERSON_LOCATION = attr('data-inperson-location') || 'Casa do Impacto, Lisbon';
 
   // width/height on the <svg> so they never render full-size before CSS loads.
   var SV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">';
@@ -291,7 +293,7 @@
     // Only show the location once a typed slot is picked (avoids implying
     // "Google Meet" before the visitor has chosen online vs in-person).
     var locRow = '';
-    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, esc('In person'));
+    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, esc(INPERSON_LOCATION));
     else if (ti && ti.key === 'online') locRow = row(ICON.video, esc('Google Meet'));
     return row(ICON.cal, when, !slot) +
       (dur ? row(ICON.clock, esc(dur)) : '') +
@@ -354,7 +356,11 @@
   Widget.prototype.updatePicker = function () {
     var main = this.root.querySelector('.rmssch-main');
     if (!main) { this.renderPicker(); return; }
+    var old = main.querySelector('.rmssch-daystrip');
+    var prev = old ? old.scrollLeft : 0;     // keep current scroll so re-render doesn't reset it
     main.innerHTML = this.pickerHtml();
+    var strip = main.querySelector('.rmssch-daystrip');
+    if (strip) strip.scrollLeft = prev;      // then centerSelectedDay animates from here (both ways)
     this.bindPicker();
   };
 
@@ -479,7 +485,9 @@
 
   Widget.prototype.renderForm = function () {
     var self = this;
-    var pending = this.selectedSlot && this.selectedSlot.type === 'inperson';
+    var type = this.selectedSlot && this.selectedSlot.type;
+    var pending = type === 'inperson';
+    var note = pending ? PENDING_NOTE : (type === 'online' ? ONLINE_NOTE : '');
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
@@ -487,7 +495,7 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
-        (pending ? '<div class="rmssch-note">' + esc(PENDING_NOTE) + '</div>' : '') +
+        (note ? '<div class="rmssch-note">' + esc(note) + '</div>' : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
