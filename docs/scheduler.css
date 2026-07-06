@@ -241,7 +241,8 @@
 .rmssch-note {
   display: flex; gap: 8px; align-items: flex-start;
   font-size: 0.68rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
-  background: none; border: 1px solid var(--rmssch-border); border-radius: 12px; padding: 12px; margin-bottom: 4px;
+  background: none; border: 1px solid color-mix(in srgb, var(--rmssch-fg) 28%, transparent);
+  border-radius: 9px; padding: 10px 11px; margin-bottom: 4px;
 }
 .rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
 .rmssch-note-ic svg { width: 14px; height: 14px; display: block; }
