@@ -343,9 +343,9 @@
     this.card(
       '<div class="rmssch-selected">' + esc(this.slotLabel(this.selectedSlot)) + '</div>' +
       '<form class="rmssch-form" novalidate>' +
-        '<div class="rmssch-field"><label>Name<input name="name" type="text" required autocomplete="name"></label></div>' +
-        '<div class="rmssch-field"><label>Email<input name="email" type="email" required autocomplete="email"></label></div>' +
-        '<div class="rmssch-field"><label>Notes (optional)<textarea name="notes" rows="2"></textarea></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +

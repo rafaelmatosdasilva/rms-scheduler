@@ -151,6 +151,7 @@
 }
 .rmssch-field { margin-bottom: 12px; }
 .rmssch-field label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; }
+.rmssch-req { color: var(--rmssch-accent); font-weight: 700; }
 .rmssch-field input,
 .rmssch-field textarea {
   width: 100%; font: inherit; font-size: 0.9rem; padding: 9px 11px;
