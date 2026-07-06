@@ -26,7 +26,7 @@
   background: var(--rmssch-bg);
   border: none;
   border-radius: var(--rmssch-radius);
-  padding: 22px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -185,7 +185,6 @@
 }
 /* Phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 640px) {
-  #rms-scheduler { padding: 18px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; }
   .rmssch-day-title { display: none; }
@@ -220,13 +219,13 @@
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
-  font-weight: 600; padding: 10px 16px; border-radius: 9px;
+  font-size: 0.875rem; font-weight: 600; padding: 10px 16px; border-radius: 9px;
   border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast);
 }
 .rmssch-btn:disabled { opacity: 0.6; cursor: default; }
 /* Back button: same tile treatment as calendar days (fill + hover outline). */
-.rmssch-back { padding: 10px 16px; border-radius: 12px; border: none; font-weight: 600; }
+.rmssch-back { padding: 10px 16px; border-radius: 12px; border: none; font-size: 0.875rem; font-weight: 600; }
 
 /* ============================ STATES =========================== */
 .rmssch-msg { font-size: 0.9rem; color: var(--rmssch-muted); padding: 8px 0; }
