@@ -26,7 +26,7 @@
   background: var(--rmssch-bg);
   border: none;
   border-radius: var(--rmssch-radius);
-  padding: 0;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -185,6 +185,7 @@
 }
 /* Phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 640px) {
+  #rms-scheduler { padding: 18px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; }
   .rmssch-day-title { display: none; }
