@@ -238,11 +238,14 @@
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
 
 .rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
-/* "Pending confirmation" note (in-person slots). */
+/* Info note (e.g. in-person pending confirmation). */
 .rmssch-note {
-  font-size: 0.8rem; font-weight: 650; color: var(--rmssch-muted);
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 0.74rem; font-weight: 650; color: var(--rmssch-fg);
   background: var(--rmssch-surface); border-radius: 9px; padding: 10px 12px; margin-bottom: 14px;
 }
+.rmssch-note-ic { flex: 0 0 15px; opacity: 0.9; margin-top: 1px; }
+.rmssch-note-ic svg { width: 15px; height: 15px; display: block; }
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {

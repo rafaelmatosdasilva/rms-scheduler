@@ -46,7 +46,8 @@
     video: SV + '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
     cal: SV + '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
     globe: SV + '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>',
-    pin: SV + '<path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>'
+    pin: SV + '<path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>',
+    info: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 11.5v4.5" stroke-linecap="round"/><path d="M12 8h.01" stroke-linecap="round"/></svg>'
   };
 
   // Maps a slot's type (from the calendar event title) to a label + icon.
@@ -54,6 +55,10 @@
     if (type === 'inperson') return { key: 'inperson', label: 'In person', icon: ICON.pin };
     if (type === 'online') return { key: 'online', label: 'Online', icon: ICON.video };
     return null;
+  }
+  // Info note with a leading (i) icon.
+  function noteHtml(text) {
+    return '<div class="rmssch-note"><span class="rmssch-note-ic">' + ICON.info + '</span><span>' + esc(text) + '</span></div>';
   }
   // Forced palette (independent of the viewer's OS light/dark), settable via
   // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
@@ -493,7 +498,7 @@
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
-      (allInPerson ? '<div class="rmssch-note">' + esc(PENDING_NOTE) + '</div>' : '') +
+      (allInPerson ? noteHtml(PENDING_NOTE) : '') +
       '<div class="rmssch-slots">' + slots + '</div>' +
     '</div>';
   };
@@ -512,7 +517,7 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
-        (note ? '<div class="rmssch-note">' + esc(note) + '</div>' : '') +
+        (note ? noteHtml(note) : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
