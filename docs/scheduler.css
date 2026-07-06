@@ -74,6 +74,9 @@
 .rmssch-ic svg { width: 16px; height: 16px; display: block; }
 
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
+/* Fill the main column and dock the action buttons at the bottom. */
+.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.rmssch-form .rmssch-actions { margin-top: auto; padding-top: 8px; }
 
 /* ============================ PICKER ============================ */
 .rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }

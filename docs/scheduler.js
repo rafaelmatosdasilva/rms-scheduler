@@ -304,35 +304,43 @@
 
   // ---- picker: month calendar + time panel -----------------------
 
+  Widget.prototype.pickerHtml = function () {
+    return '<div class="rmssch-picker">' + this.calendarHtml() + this.dayPanelHtml() + '</div>';
+  };
+
   Widget.prototype.renderPicker = function () {
-    var self = this;
     if (!this.dayKeys.length) {
       this.card('<div class="rmssch-msg">No open times right now. Please check back later.</div>');
       return;
     }
-    this.shell(
-      '<div class="rmssch-picker">' +
-        this.calendarHtml() +
-        this.dayPanelHtml() +
-      '</div>');
+    this.shell(this.pickerHtml());   // full render, incl. the info panel
+    this.bindPicker();
+  };
 
-    // Day selection (month-grid cells AND horizontal day-strip pills)
+  // Re-render ONLY the picker (calendar + day panel), leaving the info panel —
+  // and its <img> avatar — untouched, so day/month/format changes don't flicker.
+  Widget.prototype.updatePicker = function () {
+    var main = this.root.querySelector('.rmssch-main');
+    if (!main) { this.renderPicker(); return; }
+    main.innerHTML = this.pickerHtml();
+    this.bindPicker();
+  };
+
+  Widget.prototype.bindPicker = function () {
+    var self = this;
     this.root.querySelectorAll('[data-day]').forEach(function (b) {
-      b.onclick = function () { self.selectedDay = b.getAttribute('data-day'); self.renderPicker(); };
+      b.onclick = function () { self.selectedDay = b.getAttribute('data-day'); self.updatePicker(); };
     });
-    // Month nav
     this.root.querySelectorAll('[data-mon]').forEach(function (b) {
       b.onclick = function () {
         if (b.disabled) return;
         var idx = self.viewY * 12 + self.viewM + (b.getAttribute('data-mon') === 'next' ? 1 : -1);
-        self.viewY = Math.floor(idx / 12); self.viewM = idx % 12; self.renderPicker();
+        self.viewY = Math.floor(idx / 12); self.viewM = idx % 12; self.updatePicker();
       };
     });
-    // 12h / 24h
     this.root.querySelectorAll('[data-fmt]').forEach(function (b) {
-      b.onclick = function () { self.hour12 = b.getAttribute('data-fmt') === '12'; self.renderPicker(); };
+      b.onclick = function () { self.hour12 = b.getAttribute('data-fmt') === '12'; self.updatePicker(); };
     });
-    // Time selection
     this.root.querySelectorAll('.rmssch-slot').forEach(function (b) {
       b.onclick = function () { self.selectedSlot = self.slotByStart[b.getAttribute('data-slot')]; self.renderForm(); };
     });
