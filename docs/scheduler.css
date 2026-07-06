@@ -12,11 +12,11 @@
   --rmssch-muted: #6b7280;
   --rmssch-border: #e4e7ec;
   --rmssch-radius: 16px;
-  --rmssch-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
   width: 100%;
-  max-width: 880px;
+  max-width: 1200px;
   /* Constant height across every state — never resizes when switching views
      or navigating months/days. Overflow is handled by inner scroll areas. */
   height: var(--rmssch-height, 468px);

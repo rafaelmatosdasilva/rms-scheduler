@@ -74,6 +74,16 @@
   }
   var PREFETCH = ENDPOINT ? requestAvailability() : null;
 
+  // Load the Manrope webfont used by the widget.
+  (function loadFont() {
+    if (document.querySelector('link[data-rmssch-font]')) return;
+    var l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap';
+    l.setAttribute('data-rmssch-font', '1');
+    document.head.appendChild(l);
+  })();
+
   (function loadCss() {
     var href = script && script.getAttribute('data-css');
     if (!href && script && script.src) href = script.src.replace(/scheduler\.js(\?.*)?$/, 'scheduler.css');
