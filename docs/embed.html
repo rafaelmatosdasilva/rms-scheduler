@@ -34,6 +34,10 @@
         light: { '--rmssch-surface': '#eaecef', '--rmssch-fg': '#1a1c20', '--rmssch-muted': '#6b7280', '--rmssch-border': '#e4e7ec' }
       };
       var theme = (q.get('theme') === 'light') ? 'light' : 'dark';
+      // Match the iframe's color-scheme to the rendered theme. Without this,
+      // a scheme mismatch with the parent makes the browser paint an opaque
+      // (usually white) canvas behind the iframe instead of staying transparent.
+      document.documentElement.style.colorScheme = theme;
       var pal = PAL[theme];
       for (var p in pal) el.style.setProperty(p, pal[p]);
       el.style.setProperty('--rmssch-bg', q.get('bg') || (theme === 'dark' ? '#16181d' : '#ffffff'));

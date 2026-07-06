@@ -31,7 +31,7 @@
 var CONFIG = {
   // Dedicated calendar where YOU create events to mark bookable slots.
   // Each event becomes one offerable appointment (its duration = call length).
-  AVAILABILITY_CALENDAR_ID: 'PASTE_AVAILABILITY_CALENDAR_ID',
+  AVAILABILITY_CALENDAR_ID: 'c_b4f6f948e96d142d1a632ea961e94715ea838de13579dc63bbb272a8a87c247c@group.calendar.google.com',
 
   // Calendar that confirmed bookings are written to (with the guest invite).
   BOOKING_CALENDAR_ID: 'primary',   // 'primary' or a specific calendar id/email
