@@ -158,7 +158,38 @@
     this.viewM = null;
   }
 
-  Widget.prototype.start = function () { this.renderSkeleton(); this.fetchSlots(); };
+  Widget.prototype.start = function () {
+    var self = this;
+    this.renderSkeleton();
+    this.fetchSlots();
+    if (!this._resizeBound) {
+      this._resizeBound = true;
+      this._lastW = window.innerWidth;
+      window.addEventListener('resize', function () {
+        // Only reset on WIDTH change (breakpoints) — ignore height-only resizes
+        // to avoid a feedback loop with the iframe auto-resize.
+        if (window.innerWidth === self._lastW) return;
+        self._lastW = window.innerWidth;
+        self._maxH = 0; self.root.style.minHeight = ''; self.lockHeight();
+      });
+    }
+  };
+
+  // Grow (never shrink) a min-height to the tallest rendered state, so the widget
+  // stays a consistent height across steps instead of resizing (e.g. picker -> form).
+  Widget.prototype.lockHeight = function () {
+    var self = this;
+    if (self._raf) cancelAnimationFrame(self._raf);
+    self._raf = requestAnimationFrame(function () {
+      self._raf = 0;
+      var root = self.root;
+      // Don't measure before the stylesheet is applied (would be wildly tall).
+      if (!getComputedStyle(root).getPropertyValue('--rmssch-radius').trim()) return;
+      root.style.minHeight = '0px';        // release to measure natural height
+      var h = root.scrollHeight;
+      if (h > 0) { self._maxH = Math.max(self._maxH || 0, h); root.style.minHeight = self._maxH + 'px'; }
+    });
+  };
 
   Widget.prototype.fetchSlots = function () {
     var self = this;
@@ -271,7 +302,7 @@
 
   // ---- shells ----------------------------------------------------
 
-  Widget.prototype.frame = function (html) { this.root.innerHTML = html; };
+  Widget.prototype.frame = function (html) { this.root.innerHTML = html; this.lockHeight(); };
 
   // Booking detail rows (date, duration, location) — shared by the info panel
   // and the confirmation screen.
