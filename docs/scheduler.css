@@ -18,7 +18,7 @@
 
   box-sizing: border-box;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1140px;
   /* Constant height across every state — never resizes when switching views
      or navigating months/days. Overflow is handled by inner scroll areas. */
   height: var(--rmssch-height, 468px);
@@ -193,9 +193,13 @@
 .rmssch-tz { margin-top: 12px; font-size: 0.7rem; color: var(--rmssch-muted); }
 
 /* -- stack on narrow embeds -- */
+/* Extra breathing room on very wide viewports. */
+@media (min-width: 1680px) {
+  #rms-scheduler { max-width: 1360px; }
+}
 /* Stack the info panel on top once there isn't room for it beside the picker.
    Height goes auto here (content varies too much to pin at a fixed height). */
-@media (max-width: 760px) {
+@media (max-width: 1140px) {
   #rms-scheduler { height: auto; }   /* fit content — no forced empty space */
   .rmssch-shell { flex-direction: column; gap: 18px; }
   .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
@@ -204,8 +208,8 @@
   .rmssch-info-head { flex-direction: row; align-items: center; gap: 14px; }
   .rmssch-host-av { width: 48px; height: 48px; }
 }
-/* Phone: drop the month grid, use a horizontal day strip + slots below. */
-@media (max-width: 640px) {
+/* Tablet/phone: drop the month grid, use a horizontal day strip + slots below. */
+@media (max-width: 720px) {
   #rms-scheduler { padding: 18px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 0 1 auto; min-height: 0; padding-left: 0; border-left: none; }
@@ -238,6 +242,12 @@
   /* Comfortable touch targets. */
   .rmssch-field input { min-height: 44px; }
   .rmssch-btn, .rmssch-back { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+}
+/* Small phones: tighten outer padding so content keeps its width. */
+@media (max-width: 360px) {
+  #rms-scheduler { padding: 14px; }
+  .rmssch-daystrip-wrap { margin-left: -14px; margin-right: -14px; }
+  .rmssch-daystrip { padding-left: 14px; padding-right: 14px; }
 }
 
 /* ============================ FORM ============================= */
