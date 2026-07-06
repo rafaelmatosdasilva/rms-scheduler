@@ -108,8 +108,9 @@
     var href = script && script.getAttribute('data-css');
     if (!href && script && script.src) href = script.src.replace(/scheduler\.js(\?.*)?$/, 'scheduler.css');
     if (!href) return;
-    // Cache-bust so style updates always take effect (GitHub Pages caches ~10min).
-    href += (href.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now();
+    // Coarse (hourly) cache-buster: the stylesheet caches within the hour but
+    // still refreshes, instead of re-downloading on every single load.
+    href += (href.indexOf('?') === -1 ? '?' : '&') + 'v=' + Math.floor(Date.now() / 3600000);
     if (document.querySelector('link[data-rmssch]')) return;
     var link = document.createElement('link');
     link.rel = 'stylesheet';
