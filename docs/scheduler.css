@@ -230,6 +230,8 @@
   /* Minimum 14px body text on mobile. */
   .rmssch-info-row, .rmssch-slot-dur, .rmssch-note, .rmssch-sub,
   .rmssch-field label { font-size: 0.875rem; }
+  /* Taller Session-goals field so the long placeholder fits without scrolling. */
+  .rmssch-field textarea { min-height: 120px; }
 }
 
 /* ============================ FORM ============================= */
