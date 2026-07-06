@@ -199,7 +199,7 @@
         '<div class="rmssch-cal-grid">' + cells + '</div>' +
       '</div>' +
       '<div class="rmssch-day">' +
-        '<div class="rmssch-daystrip">' + strip + '</div>' +
+        '<div class="rmssch-daystrip-wrap"><div class="rmssch-daystrip">' + strip + '</div></div>' +
         '<div class="rmssch-day-head">' +
           '<div class="rmssch-day-title rmssch-skel" style="width:72px;height:22px"></div>' +
         '</div>' +
@@ -404,7 +404,10 @@
     this.root.querySelectorAll('.rmssch-slot').forEach(function (b) {
       b.onclick = function () { self.selectedSlot = self.slotByStart[b.getAttribute('data-slot')]; self.renderForm(); };
     });
+    var self2 = this, strip = this.root.querySelector('.rmssch-daystrip');
+    if (strip) strip.onscroll = function () { self2.updateStripFades(); };
     this.centerSelectedDay();
+    this.updateStripFades();
   };
 
   // Scroll the selected day pill to the middle of the horizontal strip (mobile).
@@ -416,6 +419,16 @@
       if (strip.scrollTo) strip.scrollTo({ left: left, behavior: 'smooth' });
       else strip.scrollLeft = left;
     }
+  };
+
+  // Toggle edge-fade gradients based on how far the day strip is scrolled.
+  Widget.prototype.updateStripFades = function () {
+    var wrap = this.root.querySelector('.rmssch-daystrip-wrap');
+    var strip = wrap && wrap.querySelector('.rmssch-daystrip');
+    if (!wrap || !strip) return;
+    var max = strip.scrollWidth - strip.clientWidth;
+    wrap.classList.toggle('can-left', strip.scrollLeft > 1);
+    wrap.classList.toggle('can-right', strip.scrollLeft < max - 1);
   };
 
   Widget.prototype.calendarHtml = function () {
@@ -494,7 +507,7 @@
     }).join('');
 
     return '<div class="rmssch-day">' +
-      '<div class="rmssch-daystrip">' + strip + '</div>' +
+      '<div class="rmssch-daystrip-wrap"><div class="rmssch-daystrip">' + strip + '</div></div>' +
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
@@ -514,7 +527,7 @@
       '<form class="rmssch-form" novalidate>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
@@ -534,6 +547,7 @@
     var email = form.email.value.trim();
     if (!name) return showErr(errEl, 'Please enter your name.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr(errEl, 'Please enter a valid email.');
+    if (!form.notes.value.trim()) return showErr(errEl, 'Please share your session goals.');
     errEl.hidden = true;
 
     var btn = form.querySelector('button[type="submit"]');

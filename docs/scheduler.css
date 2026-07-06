@@ -76,13 +76,12 @@
 .rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 650; }
 .rmssch-when { display: flex; flex-direction: column; gap: 2px; }
 .rmssch-when-time { color: var(--rmssch-muted); }
-.rmssch-ic { flex: 0 0 14px; color: currentColor; opacity: 0.85; margin-top: 1px; }
-.rmssch-ic svg { width: 14px; height: 14px; display: block; }
+.rmssch-ic { flex: 0 0 17px; color: currentColor; opacity: 0.85; margin-top: 1px; }
+.rmssch-ic svg { width: 17px; height: 17px; display: block; }
 
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
-/* Fill the main column and dock the action buttons at the bottom. */
-.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-.rmssch-form .rmssch-actions { margin-top: auto; padding-top: 8px; }
+.rmssch-form { display: flex; flex-direction: column; }
+.rmssch-form .rmssch-actions { margin-top: 20px; }
 
 /* ============================ PICKER ============================ */
 .rmssch-picker { display: flex; gap: 22px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }
@@ -200,7 +199,7 @@
   .rmssch-info-title { font-size: 1.15rem; }
   /* Avatar sits beside the title when the panel is stacked on top. */
   .rmssch-info-head { flex-direction: row; align-items: center; gap: 14px; }
-  .rmssch-host-av { width: 40px; height: 40px; }
+  .rmssch-host-av { width: 48px; height: 48px; }
 }
 /* Phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 640px) {
@@ -210,12 +209,27 @@
   .rmssch-day-head { display: none; }
   /* Slots take their natural height (tight fit) but scroll past a cap. */
   .rmssch-slots { flex: 0 1 auto; max-height: 340px; }
+
+  /* Day strip: edge-to-edge, no scrollbar (touch), with edge-fade gradients. */
+  .rmssch-daystrip-wrap { position: relative; margin: 0 -18px 12px; }
   .rmssch-daystrip {
-    display: flex; gap: 8px; overflow-x: auto;
-    scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent;
-    /* Bleed to the card edges (cancel the 18px card padding). */
-    margin: 0 -18px 12px; padding: 0 18px 8px;
+    display: flex; gap: 8px; overflow-x: auto; padding: 0 18px 8px;
+    scrollbar-width: none;
   }
+  .rmssch-daystrip::-webkit-scrollbar { display: none; }
+  .rmssch-daystrip-wrap::before,
+  .rmssch-daystrip-wrap::after {
+    content: ''; position: absolute; top: 0; bottom: 8px; width: 32px; z-index: 2;
+    pointer-events: none; opacity: 0; transition: opacity 0.2s ease;
+  }
+  .rmssch-daystrip-wrap::before { left: 0; background: linear-gradient(to right, var(--rmssch-bg), transparent); }
+  .rmssch-daystrip-wrap::after { right: 0; background: linear-gradient(to left, var(--rmssch-bg), transparent); }
+  .rmssch-daystrip-wrap.can-left::before { opacity: 1; }
+  .rmssch-daystrip-wrap.can-right::after { opacity: 1; }
+
+  /* Minimum 14px body text on mobile. */
+  .rmssch-info-row, .rmssch-slot-dur, .rmssch-note, .rmssch-sub,
+  .rmssch-field label { font-size: 0.875rem; }
 }
 
 /* ============================ FORM ============================= */
@@ -245,9 +259,10 @@
 .rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
 /* Info note (e.g. in-person pending confirmation). */
 .rmssch-note {
-  display: flex; gap: 8px; align-items: flex-start;
-  font-size: 0.68rem; font-weight: 650; color: color-mix(in srgb, var(--rmssch-fg) 80%, transparent);
-  background: none; border: 1px solid color-mix(in srgb, var(--rmssch-fg) 20%, transparent);
+  display: inline-flex; gap: 8px; align-items: flex-start; align-self: flex-start;
+  width: fit-content; max-width: 100%;
+  font-size: 0.68rem; font-weight: 650; color: var(--rmssch-fg);
+  background: color-mix(in srgb, var(--rmssch-accent) 30%, transparent); border: none;
   border-radius: 9px; padding: 10px 11px; margin-bottom: 0;
 }
 .rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
