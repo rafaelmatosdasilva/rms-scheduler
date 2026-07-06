@@ -169,8 +169,7 @@
 
 .rmssch-slots {
   display: flex; flex-direction: column; gap: 10px;
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
-  padding-right: 2px;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
 }
 .rmssch-slot {
   position: relative; width: 100%; padding: 13px; border-radius: 12px;
