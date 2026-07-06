@@ -134,7 +134,7 @@
     this.dayKeys = [];      // sorted available day keys
     this.selectedDay = null;
     this.selectedSlot = null;
-    this.hour12 = true;
+    this.hour12 = detectHour12();  // default from the visitor's locale
     this.viewY = null;      // calendar month currently displayed
     this.viewM = null;
   }
@@ -266,8 +266,7 @@
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     return '<div class="rmssch-info">' +
-      host +
-      '<div class="rmssch-info-title">' + esc(TITLE) + '</div>' +
+      '<div class="rmssch-info-head">' + host + '<div class="rmssch-info-title">' + esc(TITLE) + '</div></div>' +
       '<div class="rmssch-info-meta">' +
         (dur ? row(ICON.clock, dur) : '') +
         row(ICON.video, LOCATION_TEXT) +
@@ -486,6 +485,15 @@
   };
 
   // ---- utils -----------------------------------------------------
+
+  // Does the visitor's locale use a 12-hour clock?
+  function detectHour12() {
+    try {
+      var r = new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions();
+      if (typeof r.hour12 === 'boolean') return r.hour12;
+      return !(r.hourCycle === 'h23' || r.hourCycle === 'h24');
+    } catch (_) { return true; }
+  }
 
   function monthIndex_(key) { var p = key.split('-'); return (+p[0]) * 12 + (+p[1] - 1); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
