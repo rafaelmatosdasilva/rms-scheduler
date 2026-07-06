@@ -262,7 +262,7 @@
   display: inline-flex; gap: 8px; align-items: flex-start; align-self: flex-start;
   width: fit-content; max-width: 100%;
   font-size: 0.68rem; font-weight: 650; color: var(--rmssch-fg);
-  background: color-mix(in srgb, var(--rmssch-accent) 30%, transparent); border: none;
+  background: color-mix(in srgb, var(--rmssch-accent) 10%, transparent); border: none;
   border-radius: 9px; padding: 10px 11px; margin-bottom: 0;
 }
 .rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
