@@ -301,8 +301,8 @@
         this.dayPanelHtml() +
       '</div>');
 
-    // Day selection
-    this.root.querySelectorAll('.rmssch-cell.is-avail').forEach(function (b) {
+    // Day selection (month-grid cells AND horizontal day-strip pills)
+    this.root.querySelectorAll('[data-day]').forEach(function (b) {
       b.onclick = function () { self.selectedDay = b.getAttribute('data-day'); self.renderPicker(); };
     });
     // Month nav
@@ -378,7 +378,18 @@
       '</button>';
     }).join('');
 
+    // Horizontal day strip (shown instead of the month grid on small screens).
+    var strip = this.dayKeys.map(function (key) {
+      var i = self.byDay[key][0].start;
+      var sel = key === self.selectedDay ? ' is-sel' : '';
+      return '<button type="button" class="rmssch-daypill' + sel + '" data-day="' + key + '">' +
+        '<span class="rmssch-daypill-dow">' + esc(new Intl.DateTimeFormat('en-US', { timeZone: self.viewTz, weekday: 'short' }).format(new Date(i))) + '</span>' +
+        '<span class="rmssch-daypill-num">' + esc(new Intl.DateTimeFormat('en-US', { timeZone: self.viewTz, day: 'numeric' }).format(new Date(i))) + '</span>' +
+      '</button>';
+    }).join('');
+
     return '<div class="rmssch-day">' +
+      '<div class="rmssch-daystrip">' + strip + '</div>' +
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
         '<div class="rmssch-seg">' +

@@ -136,6 +136,20 @@
 }
 .rmssch-seg button.is-on { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
 
+/* Horizontal day strip (mobile only; hidden on desktop). */
+.rmssch-daystrip { display: none; }
+.rmssch-daystrip::-webkit-scrollbar { height: 6px; }
+.rmssch-daystrip::-webkit-scrollbar-track { background: transparent; }
+.rmssch-daystrip::-webkit-scrollbar-thumb { background: var(--rmssch-border); border-radius: 6px; }
+.rmssch-daypill {
+  flex: 0 0 auto; min-width: 56px; padding: 8px 10px; border-radius: 12px;
+  background: var(--rmssch-surface); text-align: center; line-height: 1.15;
+}
+.rmssch-daypill.is-sel { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
+.rmssch-daypill-dow { display: block; font-size: 0.64rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--rmssch-muted); }
+.rmssch-daypill.is-sel .rmssch-daypill-dow { color: var(--rmssch-accent-contrast); }
+.rmssch-daypill-num { display: block; font-size: 1.05rem; font-weight: 700; margin-top: 2px; }
+
 .rmssch-slots {
   display: flex; flex-direction: column; gap: 10px;
   flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
@@ -163,11 +177,17 @@
   .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
   .rmssch-info-title { font-size: 1.15rem; }
 }
+/* Phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 640px) {
   #rms-scheduler { padding: 18px; }
-  .rmssch-picker { flex-direction: column; gap: 16px; }
-  .rmssch-cal { flex: 0 0 auto; }
-  .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; border-top: 1px solid var(--rmssch-border); padding-top: 16px; }
+  .rmssch-cal { display: none; }
+  .rmssch-day { flex: 1 1 auto; min-height: 0; padding-left: 0; border-left: none; }
+  .rmssch-day-title { display: none; }
+  .rmssch-daystrip {
+    display: flex; gap: 8px; overflow-x: auto;
+    scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent;
+    padding-bottom: 8px; margin-bottom: 12px;
+  }
 }
 
 /* ============================ FORM ============================= */
