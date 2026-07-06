@@ -265,19 +265,32 @@
 
   // Booking detail rows (date, duration, location) — shared by the info panel
   // and the confirmation screen.
+  Widget.prototype.dateLabel = function (slot) {
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: this.viewTz, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    }).format(new Date(slot.start));
+  };
+  Widget.prototype.timeRangeLabel = function (slot) {
+    return this.timeLabel(slot.start) + (slot.end ? ' – ' + this.timeLabel(slot.end) : '');
+  };
+
   Widget.prototype.metaRows = function () {
     var slot = this.selectedSlot;
-    function row(icon, text, muted) {
-      return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
+    function row(icon, inner, muted) {
+      return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + inner + '</span></div>';
     }
+    // Date on the first line, time range below it.
+    var when = slot
+      ? '<span class="rmssch-when"><span>' + esc(this.dateLabel(slot)) + '</span><span class="rmssch-when-time">' + esc(this.timeRangeLabel(slot)) + '</span></span>'
+      : esc('Select a date & time');
     var dur = slot ? this.durationLabel(slot) : '';
     var ti = slot ? slotTypeInfo(slot.type) : null;
     var locRow;
-    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, 'In person');
-    else if (ti && ti.key === 'online') locRow = row(ICON.video, 'Google Meet');
-    else locRow = row(ICON.video, LOCATION_TEXT);
-    return row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
-      (dur ? row(ICON.clock, dur) : '') +
+    if (ti && ti.key === 'inperson') locRow = row(ICON.pin, esc('In person'));
+    else if (ti && ti.key === 'online') locRow = row(ICON.video, esc('Google Meet'));
+    else locRow = row(ICON.video, esc(LOCATION_TEXT));
+    return row(ICON.cal, when, !slot) +
+      (dur ? row(ICON.clock, esc(dur)) : '') +
       locRow;
   };
 

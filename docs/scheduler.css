@@ -74,6 +74,8 @@
 .rmssch-info-meta { display: flex; flex-direction: column; gap: 12px; }
 .rmssch-info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.76rem; font-weight: 650; }
 .rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 650; }
+.rmssch-when { display: flex; flex-direction: column; gap: 2px; }
+.rmssch-when-time { color: var(--rmssch-muted); }
 .rmssch-ic { flex: 0 0 16px; color: currentColor; opacity: 0.85; margin-top: 1px; }
 .rmssch-ic svg { width: 16px; height: 16px; display: block; }
 
