@@ -40,8 +40,16 @@
     clock: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     video: SV + '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>',
     cal: SV + '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
-    globe: SV + '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>'
+    globe: SV + '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>',
+    pin: SV + '<path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>'
   };
+
+  // Maps a slot's type (from the calendar event title) to a label + icon.
+  function slotTypeInfo(type) {
+    if (type === 'inperson') return { key: 'inperson', label: 'In person', icon: ICON.pin };
+    if (type === 'online') return { key: 'online', label: 'Online', icon: ICON.video };
+    return null;
+  }
   // Forced palette (independent of the viewer's OS light/dark), settable via
   // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
   // controlled separately (solid or transparent).
@@ -265,10 +273,13 @@
       (HOST_AVATAR ? '<img class="rmssch-host-av" width="56" height="56" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
+    var ti = slot ? slotTypeInfo(slot.type) : null;
+    // In-person slots show a pin + "In person"; everything else keeps the default (Meet) line.
+    var locRow = (ti && ti.key === 'inperson') ? row(ti.icon, ti.label) : row(ICON.video, LOCATION_TEXT);
     return '<div class="rmssch-info">' +
       '<div class="rmssch-info-head">' + host + '<div class="rmssch-info-title">' + esc(TITLE) + '</div></div>' +
       '<div class="rmssch-info-meta">' +
-        row(ICON.video, LOCATION_TEXT) +
+        locRow +
         row(ICON.cal, slot ? this.slotRangeLabel(slot) : 'Select a date & time', !slot) +
         (dur ? row(ICON.clock, dur) : '') +   // duration below the date/time
         (this.viewTz ? row(ICON.globe, this.viewTz.replace(/_/g, ' ')) : '') +
@@ -394,11 +405,12 @@
     var dd = new Intl.DateTimeFormat('en-US', { timeZone: this.viewTz, day: '2-digit' }).format(new Date(iso));
 
     var slots = this.byDay[this.selectedDay].map(function (slot) {
-      var dur = self.durationLabel(slot);
+      var ti = slotTypeInfo(slot.type);
+      var sub = [self.durationLabel(slot), ti ? ti.label : ''].filter(Boolean).join(' · ');
       return '<button type="button" class="rmssch-slot" data-slot="' + esc(slot.start) + '">' +
         '<span class="rmssch-slot-dot"></span>' +
         '<span class="rmssch-slot-time">' + esc(self.timeLabel(slot.start)) + '</span>' +
-        (dur ? '<span class="rmssch-slot-dur">' + esc(dur) + '</span>' : '') +
+        (sub ? '<span class="rmssch-slot-dur">' + esc(sub) + '</span>' : '') +
       '</button>';
     }).join('');
 

@@ -155,10 +155,19 @@ function computeAvailability_(days) {
     if (overlapsBusy_(busy, s, e)) continue;     // conflicts elsewhere -> hide
     slots.push({
       start: Utilities.formatDate(s, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-      end: Utilities.formatDate(e, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
+      end: Utilities.formatDate(e, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      type: slotType_(ev.getTitle())   // 'online' | 'inperson' | ''
     });
   }
   return slots;
+}
+
+/** Classify a slot from its availability-event title. */
+function slotType_(title) {
+  var t = (title || '').toLowerCase();
+  if (/in.?person|presencial|presencial|in-person/.test(t)) return 'inperson';
+  if (/online|remote|meet|zoom|call|virtual/.test(t)) return 'online';
+  return '';
 }
 
 /** Busy intervals [startMs, endMs] (buffer-expanded) across all busy calendars. */
