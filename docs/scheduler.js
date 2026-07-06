@@ -50,6 +50,19 @@
     '--rmssch-border': attr('data-border')
   };
 
+  // Kick the availability request off IMMEDIATELY (before DOMContentLoaded), so
+  // the network round-trip overlaps with parsing/CSS load. The widget consumes
+  // this promise when it mounts.
+  function requestAvailability() {
+    var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?' : '&') + 'action=availability&_=' + Date.now();
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+    return fetch(url, ctrl ? { method: 'GET', signal: ctrl.signal } : { method: 'GET' })
+      .then(function (r) { if (timer) clearTimeout(timer); return r.json(); })
+      .catch(function (err) { if (timer) clearTimeout(timer); throw err; });
+  }
+  var PREFETCH = ENDPOINT ? requestAvailability() : null;
+
   (function loadCss() {
     var href = script && script.getAttribute('data-css');
     if (!href && script && script.src) href = script.src.replace(/scheduler\.js(\?.*)?$/, 'scheduler.css');
@@ -101,29 +114,42 @@
     this.viewM = null;
   }
 
-  Widget.prototype.start = function () { this.renderLoading(); this.fetchSlots(); };
+  Widget.prototype.start = function () { this.renderSkeleton(); this.fetchSlots(); };
 
   Widget.prototype.fetchSlots = function () {
     var self = this;
-    var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?' : '&') + 'action=availability&_=' + Date.now();
-    var ctrl = ('AbortController' in window) ? new AbortController() : null;
-    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
-    fetch(url, ctrl ? { method: 'GET', signal: ctrl.signal } : { method: 'GET' })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (timer) clearTimeout(timer);
+    var p = PREFETCH || requestAvailability();
+    PREFETCH = null; // consume once
+    p.then(function (data) {
         if (!data || !data.ok) throw new Error((data && data.error) || 'Bad response');
         self.tz = data.timeZone || undefined;
         self.groupByDay(data.slots || []);
         self.renderPicker();
       })
       .catch(function (err) {
-        if (timer) clearTimeout(timer);
         try { console.error('[rms-scheduler] availability request failed:', err); } catch (_) {}
         var aborted = err && err.name === 'AbortError';
         var detail = err ? ((err.name || 'Error') + ': ' + (err.message || String(err))) : '';
         self.renderError(aborted ? 'Timed out loading times (20s). Tap retry.' : 'Could not load available times.', detail);
       });
+  };
+
+  // A calendar-shaped placeholder shown instantly while slots load.
+  Widget.prototype.renderSkeleton = function () {
+    this.root.classList.remove('rmssch-centered');
+    var now = new Date();
+    var monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(now);
+    var dows = DOW.map(function (n) { return '<span>' + n.toUpperCase() + '</span>'; }).join('');
+    var cells = ''; for (var i = 0; i < 42; i++) cells += '<span class="rmssch-cell rmssch-skel"></span>';
+    var pills = ''; for (var j = 0; j < 5; j++) pills += '<div class="rmssch-slot rmssch-skel"></div>';
+    this.frame('<div class="rmssch-picker rmssch-loading">' +
+      '<div class="rmssch-cal">' +
+        '<div class="rmssch-cal-head"><div class="rmssch-cal-title"><strong>' + esc(monthName) + '</strong> ' + now.getFullYear() + '</div></div>' +
+        '<div class="rmssch-cal-dows">' + dows + '</div>' +
+        '<div class="rmssch-cal-grid">' + cells + '</div>' +
+      '</div>' +
+      '<div class="rmssch-day"><div class="rmssch-slots">' + pills + '</div></div>' +
+    '</div>');
   };
 
   Widget.prototype.groupByDay = function (slots) {

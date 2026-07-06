@@ -253,3 +253,27 @@ function clampInt_(v, dflt, min, max) {
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
+
+// ------------------------- KEEP-WARM (optional) --------------------
+// Apps Script web apps go "cold" after a few idle minutes, making the next
+// request slow. Run setupKeepWarm() ONCE from the editor (press Run, then
+// authorize) to create a trigger that pings the web app every 5 minutes so it
+// stays warm. Run removeKeepWarm() to stop it.
+
+function keepWarm() {
+  try {
+    var url = ScriptApp.getService().getUrl();
+    if (url) UrlFetchApp.fetch(url + '?action=availability&warm=1', { muteHttpExceptions: true });
+  } catch (err) {}
+}
+
+function setupKeepWarm() {
+  removeKeepWarm();
+  ScriptApp.newTrigger('keepWarm').timeBased().everyMinutes(5).create();
+}
+
+function removeKeepWarm() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'keepWarm') ScriptApp.deleteTrigger(t);
+  });
+}

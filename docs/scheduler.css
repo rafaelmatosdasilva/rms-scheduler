@@ -183,6 +183,15 @@
   color: var(--rmssch-accent-contrast); display: inline-flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 10px;
 }
+/* Loading skeleton */
+.rmssch-skel {
+  background: var(--rmssch-surface) !important;
+  border-radius: 12px; pointer-events: none;
+  animation: rmssch-pulse 1.2s ease-in-out infinite;
+}
+.rmssch-slot.rmssch-skel { min-height: 46px; }
+@keyframes rmssch-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; } }
+
 .rmssch-spinner {
   width: 18px; height: 18px; border: 2px solid var(--rmssch-border);
   border-top-color: var(--rmssch-accent); border-radius: 50%;
