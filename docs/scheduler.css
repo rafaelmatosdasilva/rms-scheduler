@@ -7,10 +7,12 @@
   --rmssch-accent-contrast: #16181d; /* text on accent */
   --rmssch-avail-dot: #22c55e;       /* green dot on time slots */
   --rmssch-bg: #ffffff;
-  --rmssch-surface: #eaecef;         /* day cells / pills — steps off the bg */
-  --rmssch-fg: #1a1c20;
-  --rmssch-muted: #6b7280;
-  --rmssch-border: #e4e7ec;
+  /* Greys are black-with-opacity (light) / white-with-opacity (dark) so they
+     tint the chosen background instead of clashing. */
+  --rmssch-surface: rgba(0, 0, 0, 0.05);
+  --rmssch-fg: rgba(0, 0, 0, 0.9);
+  --rmssch-muted: rgba(0, 0, 0, 0.5);
+  --rmssch-border: rgba(0, 0, 0, 0.1);
   --rmssch-radius: 10px;
   --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
@@ -264,10 +266,10 @@
 @media (prefers-color-scheme: dark) {
   #rms-scheduler {
     --rmssch-bg: #16181d;
-    --rmssch-surface: #2d333e;   /* clearly lighter than the bg so tiles pop */
-    --rmssch-fg: #f2f4f7;
-    --rmssch-muted: #98a2b3;
-    --rmssch-border: #2a2e37;
+    --rmssch-surface: rgba(255, 255, 255, 0.08);
+    --rmssch-fg: rgba(255, 255, 255, 0.95);
+    --rmssch-muted: rgba(255, 255, 255, 0.5);
+    --rmssch-border: rgba(255, 255, 255, 0.12);
   }
   .rmssch-error { color: #ff9a8a; }
 }

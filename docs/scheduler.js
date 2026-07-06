@@ -46,8 +46,8 @@
   // data-theme="dark|light". Excludes --rmssch-bg so the card background can be
   // controlled separately (solid or transparent).
   var PALETTES = {
-    dark: { '--rmssch-surface': '#2d333e', '--rmssch-fg': '#f2f4f7', '--rmssch-muted': '#98a2b3', '--rmssch-border': '#2a2e37' },
-    light: { '--rmssch-surface': '#eaecef', '--rmssch-fg': '#1a1c20', '--rmssch-muted': '#6b7280', '--rmssch-border': '#e4e7ec' }
+    dark: { '--rmssch-surface': 'rgba(255,255,255,0.08)', '--rmssch-fg': 'rgba(255,255,255,0.95)', '--rmssch-muted': 'rgba(255,255,255,0.5)', '--rmssch-border': 'rgba(255,255,255,0.12)' },
+    light: { '--rmssch-surface': 'rgba(0,0,0,0.05)', '--rmssch-fg': 'rgba(0,0,0,0.9)', '--rmssch-muted': 'rgba(0,0,0,0.5)', '--rmssch-border': 'rgba(0,0,0,0.1)' }
   };
   var THEME_NAME = attr('data-theme');
 
