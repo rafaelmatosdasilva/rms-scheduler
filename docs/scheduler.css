@@ -94,7 +94,7 @@
 .rmssch-cal-title strong { color: var(--rmssch-fg); font-weight: 700; }
 .rmssch-cal-nav { display: flex; gap: 6px; }
 .rmssch-cal-nav button {
-  width: 40px; height: 40px; border-radius: 10px; font-size: 1.15rem; line-height: 1;
+  width: 44px; height: 44px; border-radius: 10px; font-size: 1.15rem; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   color: var(--rmssch-muted); border: 1px solid transparent;
 }
@@ -238,6 +238,11 @@
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
 
 .rmssch-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+/* "Pending confirmation" note (in-person slots). */
+.rmssch-note {
+  font-size: 0.8rem; font-weight: 650; color: var(--rmssch-muted);
+  background: var(--rmssch-surface); border-radius: 9px; padding: 10px 12px; margin-bottom: 14px;
+}
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
@@ -264,6 +269,7 @@
   color: var(--rmssch-accent-contrast); display: inline-flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 10px;
 }
+.rmssch-confirm-check.is-pending { background: var(--rmssch-surface); color: var(--rmssch-fg); }
 /* Loading skeleton */
 .rmssch-skel {
   background: var(--rmssch-surface) !important;

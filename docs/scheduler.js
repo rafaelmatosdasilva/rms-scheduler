@@ -33,6 +33,9 @@
   var HOST_NAME = attr('data-host-name');
   var HOST_AVATAR = attr('data-host-avatar');
   var LOCATION_TEXT = attr('data-location') || 'Details provided upon confirmation.';
+  // In-person slots aren't auto-confirmed (e.g. require ticket validation).
+  var PENDING_NOTE = attr('data-pending-note') ||
+    'In-person sessions need confirmation — you’ll get an email once it’s validated.';
 
   // width/height on the <svg> so they never render full-size before CSS loads.
   var SV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">';
@@ -381,7 +384,9 @@
     var strip = this.root.querySelector('.rmssch-daystrip');
     var sel = strip && strip.querySelector('.rmssch-daypill.is-sel');
     if (strip && sel && strip.clientWidth) {
-      strip.scrollLeft = sel.offsetLeft - (strip.clientWidth - sel.clientWidth) / 2;
+      var left = sel.offsetLeft - (strip.clientWidth - sel.clientWidth) / 2;
+      if (strip.scrollTo) strip.scrollTo({ left: left, behavior: 'smooth' });
+      else strip.scrollLeft = left;
     }
   };
 
@@ -469,6 +474,7 @@
 
   Widget.prototype.renderForm = function () {
     var self = this;
+    var pending = this.selectedSlot && this.selectedSlot.type === 'inperson';
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
@@ -476,10 +482,11 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Notes (optional)</span><textarea name="notes" rows="2"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
+        (pending ? '<div class="rmssch-note">' + esc(PENDING_NOTE) + '</div>' : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
-          '<button class="rmssch-btn" type="submit">Confirm booking</button>' +
+          '<button class="rmssch-btn" type="submit">' + (pending ? 'Request booking' : 'Confirm booking') + '</button>' +
         '</div>' +
       '</form>');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
@@ -518,12 +525,15 @@
   Widget.prototype.renderConfirm = function (name, email, data) {
     this.root.classList.add('rmssch-centered');
     var meet = data && data.meetLink;
+    var pending = this.selectedSlot && this.selectedSlot.type === 'inperson';
     var who = HOST_NAME ? ' with ' + esc(HOST_NAME) : '';
+    var title = pending ? 'Your booking request has been received.' : ('Your booking' + who + ' is confirmed.');
     this.frame(
       '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
-        '<div class="rmssch-confirm-check">✓</div>' +
-        '<div class="rmssch-title">Your booking' + who + ' is confirmed.</div>' +
+        '<div class="rmssch-confirm-check' + (pending ? ' is-pending' : '') + '">' + (pending ? '⏳' : '✓') + '</div>' +
+        '<div class="rmssch-title">' + title + '</div>' +
         '<div class="rmssch-info-meta rmssch-confirm-meta">' + this.metaRows() + '</div>' +
+        (pending ? '<p class="rmssch-msg">' + esc(PENDING_NOTE) + '</p>' : '') +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
         (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
       '</div></div>');
