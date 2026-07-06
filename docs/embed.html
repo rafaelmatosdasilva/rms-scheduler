@@ -40,14 +40,16 @@
       // a scheme mismatch with the parent makes the browser paint an opaque
       // (usually white) canvas behind the iframe instead of staying transparent.
       document.documentElement.style.colorScheme = theme;
+      // Accept bare hex (no #, since # breaks a URL): 171711 -> #171711
+      function color(v) { return /^[0-9a-fA-F]{3,8}$/.test(v) ? '#' + v : v; }
       var pal = PAL[theme];
       for (var p in pal) el.style.setProperty(p, pal[p]);
-      el.style.setProperty('--rmssch-bg', q.get('bg') || (theme === 'dark' ? '#16181d' : '#ffffff'));
+      el.style.setProperty('--rmssch-bg', q.get('bg') ? color(q.get('bg')) : (theme === 'dark' ? '#16181d' : '#ffffff'));
       var tokens = {
         accent: '--rmssch-accent', contrast: '--rmssch-accent-contrast', dot: '--rmssch-avail-dot',
         surface: '--rmssch-surface', fg: '--rmssch-fg', muted: '--rmssch-muted', border: '--rmssch-border'
       };
-      Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], v); });
+      Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], color(v)); });
     })();
   </script>
 

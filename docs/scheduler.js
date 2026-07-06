@@ -113,7 +113,8 @@
     // container across re-renders).
     var pal = PALETTES[THEME_NAME];
     if (pal) for (var p in pal) root.style.setProperty(p, pal[p]);
-    for (var k in THEME) { if (THEME[k]) root.style.setProperty(k, THEME[k]); }
+    var color = function (v) { return /^[0-9a-fA-F]{3,8}$/.test(v) ? '#' + v : v; };
+    for (var k in THEME) { if (THEME[k]) root.style.setProperty(k, color(THEME[k])); }
     if (!ENDPOINT) {
       root.innerHTML = '<p class="rmssch-msg rmssch-error">Scheduler not configured: missing data-endpoint.</p>';
       return;
