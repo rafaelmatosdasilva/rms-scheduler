@@ -42,9 +42,13 @@
       document.documentElement.style.colorScheme = theme;
       // Accept bare hex (no #, since # breaks a URL): 171711 -> #171711
       function color(v) { return /^[0-9a-fA-F]{3,8}$/.test(v) ? '#' + v : v; }
+      // opacity=0..1 (1 = 100%, 0.5 = 50%) applied to a 6-digit bg hex.
+      function hexAlpha(o) { var a = Math.round(Math.max(0, Math.min(1, parseFloat(o))) * 255).toString(16); return (a.length < 2 ? '0' : '') + a; }
+      var bg = q.get('bg'), op = q.get('opacity');
+      if (bg && op !== null && /^[0-9a-fA-F]{6}$/.test(bg)) bg += hexAlpha(op);
       var pal = PAL[theme];
       for (var p in pal) el.style.setProperty(p, pal[p]);
-      el.style.setProperty('--rmssch-bg', q.get('bg') ? color(q.get('bg')) : (theme === 'dark' ? '#16181d' : '#ffffff'));
+      el.style.setProperty('--rmssch-bg', bg ? color(bg) : (theme === 'dark' ? '#16181d' : '#ffffff'));
       var tokens = {
         accent: '--rmssch-accent', contrast: '--rmssch-accent-contrast', dot: '--rmssch-avail-dot',
         surface: '--rmssch-surface', fg: '--rmssch-fg', muted: '--rmssch-muted', border: '--rmssch-border'
