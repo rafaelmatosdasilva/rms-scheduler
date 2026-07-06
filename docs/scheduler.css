@@ -61,7 +61,10 @@
 .rmssch-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 
 .rmssch-host { display: flex; align-items: center; gap: 10px; }
-.rmssch-host-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.rmssch-host-av {
+  width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+  background: var(--rmssch-accent); /* shows behind transparent-cutout photos */
+}
 .rmssch-host-name { font-size: 0.9rem; font-weight: 600; color: var(--rmssch-muted); }
 .rmssch-info-title { font-size: 1.3rem; font-weight: 700; line-height: 1.22; }
 .rmssch-info-meta { display: flex; flex-direction: column; gap: 12px; }

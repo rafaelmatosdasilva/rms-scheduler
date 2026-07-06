@@ -245,7 +245,7 @@
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + esc(text) + '</span></div>';
     }
     var host = (HOST_AVATAR || HOST_NAME) ? '<div class="rmssch-host">' +
-      (HOST_AVATAR ? '<img class="rmssch-host-av" src="' + esc(HOST_AVATAR) + '" alt="">' : '') +
+      (HOST_AVATAR ? '<img class="rmssch-host-av" src="' + esc(HOST_AVATAR) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
       (HOST_NAME ? '<div class="rmssch-host-name">' + esc(HOST_NAME) + '</div>' : '') + '</div>' : '';
     var dur = slot ? this.durationLabel(slot) : '';
     return '<div class="rmssch-info">' +
