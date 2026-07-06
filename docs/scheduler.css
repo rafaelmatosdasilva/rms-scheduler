@@ -241,11 +241,11 @@
 /* Info note (e.g. in-person pending confirmation). */
 .rmssch-note {
   display: flex; gap: 8px; align-items: flex-start;
-  font-size: 0.74rem; font-weight: 650; color: var(--rmssch-fg);
+  font-size: 0.68rem; font-weight: 650; color: var(--rmssch-fg);
   background: var(--rmssch-surface); border-radius: 9px; padding: 10px 12px; margin-bottom: 14px;
 }
-.rmssch-note-ic { flex: 0 0 15px; opacity: 0.9; margin-top: 1px; }
-.rmssch-note-ic svg { width: 15px; height: 15px; display: block; }
+.rmssch-note-ic { flex: 0 0 14px; opacity: 0.9; margin-top: 1px; }
+.rmssch-note-ic svg { width: 14px; height: 14px; display: block; }
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
