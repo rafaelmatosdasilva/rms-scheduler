@@ -41,6 +41,7 @@ var CONFIG = {
   MIN_NOTICE_MINUTES: 120,          // earliest bookable slot from "now"
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
   CONSUME_SLOT: true,               // delete the availability event once booked
+  CACHE_SECONDS: 45,                // cache availability this long (speeds loads)
 
   EVENT_TITLE: 'Meeting with {name}',
   EVENT_LOCATION: ''                // optional
@@ -52,12 +53,19 @@ function doGet(e) {
     var action = (e && e.parameter && e.parameter.action) || 'availability';
     if (action !== 'availability') return json_({ ok: false, error: 'unknown action' });
     var days = clampInt_((e && e.parameter && e.parameter.days), CONFIG.LOOKAHEAD_DAYS, 1, CONFIG.LOOKAHEAD_DAYS);
-    return json_({
-      ok: true,
-      timeZone: CONFIG.TIMEZONE,
-      label: CONFIG.TIMEZONE,
-      slots: computeAvailability_(days)
+
+    // Short cache so repeat loads are instant. Booking clears it (see doPost);
+    // and a slot booked within the window is caught by the re-check in doPost.
+    var cache = CacheService.getScriptCache();
+    var key = 'avail_' + days;
+    var hit = cache.get(key);
+    if (hit) return ContentService.createTextOutput(hit).setMimeType(ContentService.MimeType.JSON);
+
+    var payload = JSON.stringify({
+      ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days)
     });
+    cache.put(key, payload, CONFIG.CACHE_SECONDS);
+    return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
@@ -111,6 +119,9 @@ function doPost(e) {
     // Consume the availability slot so it can't be booked again.
     if (CONFIG.CONSUME_SLOT) { try { slotEvent.deleteEvent(); } catch (_) {} }
 
+    // Invalidate the availability cache so the booked slot disappears at once.
+    try { CacheService.getScriptCache().remove('avail_' + CONFIG.LOOKAHEAD_DAYS); } catch (_) {}
+
     return json_({
       ok: true,
       eventId: event.getId(),
@@ -130,6 +141,9 @@ function computeAvailability_(days) {
   var horizon = new Date(now.getTime() + days * 86400000);
 
   var events = getAvailabilityCalendar_().getEvents(now, horizon);
+  // Fetch busy events from every other owned calendar ONCE over the whole
+  // window, then test overlaps in memory (avoids a query per slot).
+  var busy = collectBusy_(now, horizon);
   var slots = [];
   for (var i = 0; i < events.length; i++) {
     var ev = events[i];
@@ -137,13 +151,36 @@ function computeAvailability_(days) {
     var s = ev.getStartTime();
     var e = ev.getEndTime();
     if (s < earliest) continue;                  // too soon / in the past
-    if (isBusy_(s, e)) continue;                  // conflicts elsewhere -> hide
+    if (overlapsBusy_(busy, s, e)) continue;     // conflicts elsewhere -> hide
     slots.push({
       start: Utilities.formatDate(s, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
       end: Utilities.formatDate(e, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
     });
   }
   return slots;
+}
+
+/** Busy intervals [startMs, endMs] (buffer-expanded) across all busy calendars. */
+function collectBusy_(start, end) {
+  var buffer = CONFIG.BUFFER_MINUTES * 60000;
+  var cals = getBusyCalendars_();
+  var out = [];
+  for (var i = 0; i < cals.length; i++) {
+    var evs = cals[i].getEvents(start, end);
+    for (var j = 0; j < evs.length; j++) {
+      if (evs[j].getMyStatus() === CalendarApp.GuestStatus.NO) continue;
+      out.push([evs[j].getStartTime().getTime() - buffer, evs[j].getEndTime().getTime() + buffer]);
+    }
+  }
+  return out;
+}
+
+function overlapsBusy_(busy, s, e) {
+  var ss = s.getTime(), ee = e.getTime();
+  for (var i = 0; i < busy.length; i++) {
+    if (busy[i][0] < ee && busy[i][1] > ss) return true;
+  }
+  return false;
 }
 
 /** The availability event that starts exactly at `start`, or null. */
