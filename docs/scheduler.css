@@ -217,7 +217,9 @@
 .rmssch-field input,
 .rmssch-field textarea {
   width: 100%; font: inherit; font-size: 0.9rem; padding: 9px 11px;
-  border: 1px solid var(--rmssch-border); border-radius: 9px;
+  /* Stronger, theme-adaptive border so fields read clearly. */
+  border: 1px solid color-mix(in srgb, var(--rmssch-fg) 28%, transparent);
+  border-radius: 9px;
   background: var(--rmssch-bg); color: inherit;
 }
 .rmssch-field input:focus,
