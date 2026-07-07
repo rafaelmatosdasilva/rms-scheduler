@@ -660,7 +660,7 @@
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
-          '<button class="rmssch-btn" type="submit">' + btnLabel + '</button>' +
+          '<button class="rmssch-btn" type="submit">' + esc(btnLabel) + ICON.check + '</button>' +
         '</div>' +
       '</form>');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
