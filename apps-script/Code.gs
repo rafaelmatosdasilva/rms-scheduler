@@ -44,7 +44,9 @@ var CONFIG = {
   // and can never be double-booked (the busy-check alone misses advanced-API/Meet
   // bookings). To re-open a slot after a cancellation, re-add it to the calendar.
   CONSUME_SLOT: true,
-  CACHE_SECONDS: 45,                // cache availability this long (speeds loads)
+  CACHE_SECONDS: 600,               // 10 min — keep-warm (every 5 min) keeps this cache
+                                    // populated so visitors get an instant, pre-computed
+                                    // response instead of a slow recompute. Booking clears it.
 
   // {first} = booker's first name; {name} = full name.
   EVENT_TITLE: 'Meeting with {name}',   // fallback when a slot's type is unknown
