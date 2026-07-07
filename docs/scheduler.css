@@ -267,8 +267,8 @@
   .rmssch-field label { font-size: 0.875rem; }
   /* Taller Session-goals field so the long placeholder fits without scrolling. */
   .rmssch-field textarea { min-height: 90px; }
-  /* Comfortable touch targets. */
-  .rmssch-field input { min-height: 44px; }
+  /* Comfortable touch targets (but not the confirmation checkbox). */
+  .rmssch-field input:not([type="checkbox"]) { min-height: 44px; }
   .rmssch-btn, .rmssch-back { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 }
 /* Small phones: tighten outer padding so content keeps its width. */
