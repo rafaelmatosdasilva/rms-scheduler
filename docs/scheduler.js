@@ -667,10 +667,7 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
-        '<div class="rmssch-field"><span class="rmssch-lbl">Useful links <span class="rmssch-optional">(optional)</span></span>' +
-          '<div class="rmssch-links" data-links><input name="link" type="url" autocomplete="off" placeholder="e.g. your portfolio or resume link"></div>' +
-          '<button type="button" class="rmssch-add-link" data-add-link>+ Add another link</button>' +
-        '</div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Useful link <span class="rmssch-optional">(optional)</span></span><input name="link" type="url" autocomplete="off" placeholder="e.g. your portfolio or resume link"></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
         (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I confirm I have a LisboaUX co-working day ticket. <span class="rmssch-req">*</span></span></label></div>' : '') +
@@ -687,17 +684,6 @@
       el.addEventListener('input', function () { markField(el, false); });
       el.addEventListener('change', function () { markField(el, false); });
     });
-    // "Add another link" appends an extra optional link input (capped at 5).
-    var addLink = this.root.querySelector('[data-add-link]');
-    if (addLink) addLink.onclick = function () {
-      var box = self.root.querySelector('[data-links]');
-      var inp = document.createElement('input');
-      inp.name = 'link'; inp.type = 'url'; inp.autocomplete = 'off';
-      inp.placeholder = 'e.g. your portfolio or resume link';
-      box.appendChild(inp);
-      inp.focus();
-      if (box.querySelectorAll('input').length >= 5) addLink.style.display = 'none';
-    };
   };
 
   Widget.prototype.submit = function (form) {
