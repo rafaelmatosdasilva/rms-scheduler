@@ -17,8 +17,7 @@
   --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
-  width: 100%;
-  max-width: 1140px;
+  width: 100%;   /* fills its container — cap the width via the embed/iframe box */
   /* Height grows to fit content by default; embeds can pin it (?fill=1 fills the
      iframe box, or set a fixed height on the iframe + the auto-resize listener). */
   overflow: hidden;
@@ -222,10 +221,6 @@
 .rmssch-tz { margin-top: 12px; font-size: 0.875rem; color: var(--rmssch-muted); }
 
 /* -- stack on narrow embeds -- */
-/* Extra breathing room on very wide viewports. */
-@media (min-width: 1680px) {
-  #rms-scheduler { max-width: 1360px; }
-}
 /* Stack the info panel on top once there isn't room for it beside the picker. */
 @media (max-width: 1140px) {
   .rmssch-shell { flex-direction: column; gap: 18px; }

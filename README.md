@@ -140,9 +140,9 @@ https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00&contrast=%23ffff
 ```
 
 **Figma Sites (fixed-size embed):** the auto-resize listener can't run there, so append
-**`?fill=1`** — the widget stretches to **100% width _and_ height of the iframe box** you
-draw in Figma (overriding both the fixed per-breakpoint heights and the max-width cap; tall
-content scrolls inside):
+**`?fill=1`** — the widget stretches to **100% height of the iframe box** you draw in Figma
+(width already fills 100%). Size the frame in Figma to control the widget's footprint; tall
+content scrolls inside:
 
 ```
 https://YOU.github.io/rms-scheduler/embed.html?fill=1&accent=%23ff5c00
