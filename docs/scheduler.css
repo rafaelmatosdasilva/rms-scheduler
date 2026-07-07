@@ -108,9 +108,14 @@
   font-size: 0.875rem; letter-spacing: 0.04em; color: var(--rmssch-muted);
   text-align: center; margin-bottom: 8px;
 }
-.rmssch-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+/* Grid fills the calendar's remaining height; its 6 rows share that space
+   equally (never below the 46px minimum), so the day cells grow to fill. */
+.rmssch-cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  flex: 1 1 auto; grid-auto-rows: minmax(46px, 1fr);
+}
 .rmssch-cell {
-  position: relative; height: 46px; border-radius: 12px;
+  position: relative; min-height: 46px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.95rem; font-weight: 650;
 }
