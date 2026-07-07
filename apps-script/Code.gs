@@ -246,7 +246,7 @@ function createBooking_(title, description, start, end, email, type) {
   var location;
   if (type === 'inperson') {
     location = 'In person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION);
-    if (CONFIG.IN_PERSON_MAPS_URL) location += ' — ' + CONFIG.IN_PERSON_MAPS_URL;
+    if (CONFIG.IN_PERSON_MAPS_URL) location += ' - ' + CONFIG.IN_PERSON_MAPS_URL;
   } else {
     location = CONFIG.EVENT_LOCATION;
   }
