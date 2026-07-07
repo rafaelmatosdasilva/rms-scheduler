@@ -110,9 +110,12 @@
     var href = script && script.getAttribute('data-css');
     if (!href && script && script.src) href = script.src.replace(/scheduler\.js(\?.*)?$/, 'scheduler.css');
     if (!href) return;
-    // Coarse (hourly) cache-buster: the stylesheet caches within the hour but
-    // still refreshes, instead of re-downloading on every single load.
-    href += (href.indexOf('?') === -1 ? '?' : '&') + 'v=' + Math.floor(Date.now() / 3600000);
+    // Reuse the content-hash version stamped on our own <script src>
+    // (…scheduler.js?v=HASH) so the CSS busts in lockstep with each deploy.
+    // Falls back to an hourly bucket when unstamped (e.g. local dev).
+    var vm = script && script.src && script.src.match(/[?&]v=([^&]+)/);
+    var v = vm ? vm[1] : Math.floor(Date.now() / 3600000);
+    href += (href.indexOf('?') === -1 ? '?' : '&') + 'v=' + v;
     if (document.querySelector('link[data-rmssch]')) return;
     var link = document.createElement('link');
     link.rel = 'stylesheet';
