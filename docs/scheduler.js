@@ -693,12 +693,11 @@
     markField(form.email, badEmail);
     markField(form.notes, badNotes);
     if (badName || badEmail || badNotes) {
+      // No written validation feedback — just highlight the offending fields red
+      // and focus the first one.
       var first = form.querySelector('.rmssch-field.is-invalid input, .rmssch-field.is-invalid textarea');
       if (first) first.focus();
-      // Red field highlighting is enough for empty fields; only show a message
-      // when a non-empty email is malformed.
-      if (badEmail && email) showErr(errEl, 'Please enter a valid email.');
-      else errEl.hidden = true;
+      errEl.hidden = true;
       return;
     }
     errEl.hidden = true;
