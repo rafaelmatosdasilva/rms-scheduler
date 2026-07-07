@@ -490,7 +490,8 @@
     } else {
       var grid = this.root.querySelector('.rmssch-cal-grid');
       if (!grid) return;
-      grid.querySelectorAll('[data-date]').forEach(function (c) { c.tabIndex = c.getAttribute('data-date') === key ? 0 : -1; });
+      // All available days stay tabbable (Tab steps through every day); arrows
+      // just move focus. Off days keep tabindex -1 (focusable only via arrows).
       var el = grid.querySelector('[data-date="' + key + '"]');
       if (el) el.focus();
     }
@@ -539,9 +540,6 @@
     var currentIdx = now.getFullYear() * 12 + now.getMonth();
     var minIdx = Math.max(firstIdx, currentIdx);   // never page into the past
     var monthHasAvail = this.dayKeys.some(function (k) { return monthIndex_(k) === monthIdx; });
-    // The cell that owns keyboard focus (roving tabindex). Falls back to the
-    // selected day, or the first available day in this month.
-    var focusKey = this.focusKey || this.selectedDay;
 
     var MAX_DOTS = 6;
     var cells = '';
@@ -560,7 +558,7 @@
           ' data-day="' + key + '" data-date="' + key + '"' +
           ' aria-selected="' + (sel ? 'true' : 'false') + '"' +
           ' aria-label="' + esc(label + ', ' + count + (count === 1 ? ' time available' : ' times available')) + '"' +
-          ' tabindex="' + (key === focusKey ? '0' : '-1') + '">' +
+          ' tabindex="0">' +
           '<span class="rmssch-cell-num">' + d + '</span><span class="rmssch-cell-dots">' + dots + '</span></button>';
       } else {
         cells += '<span role="gridcell" class="rmssch-cell is-off' + isToday + '"' +
