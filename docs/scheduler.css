@@ -112,10 +112,10 @@
    equally (never below the 46px minimum), so the day cells grow to fill. */
 .rmssch-cal-grid {
   display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
-  flex: 1 1 auto; grid-auto-rows: minmax(46px, 1fr);
+  flex: 1 1 auto; grid-auto-rows: minmax(44px, 1fr);
 }
 .rmssch-cell {
-  position: relative; min-height: 46px; border-radius: 12px;
+  position: relative; min-height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.95rem; font-weight: 650;
 }
@@ -165,7 +165,8 @@
   margin-top: 12px; font-size: 0.875rem; color: var(--rmssch-muted); text-align: center;
 }
 .rmssch-cal-jump {
-  padding: 8px 14px; border-radius: 9px; font-size: 0.875rem; font-weight: 650;
+  min-height: 44px; padding: 8px 14px; border-radius: 9px; font-size: 0.875rem; font-weight: 650;
+  display: inline-flex; align-items: center; justify-content: center;
   color: var(--rmssch-fg); background: var(--rmssch-surface);
   border: 1px solid transparent; outline: 2px solid transparent; outline-offset: -2px;
 }
@@ -185,7 +186,7 @@
   border-radius: 9px; padding: 3px;
 }
 .rmssch-seg button {
-  min-width: 44px; min-height: 40px; padding: 0 14px; border-radius: 8px;
+  min-width: 44px; min-height: 44px; padding: 0 14px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 0.875rem; font-weight: 650; color: var(--rmssch-muted);
 }
@@ -213,7 +214,7 @@
   flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
 }
 .rmssch-slot {
-  position: relative; width: 100%; padding: 13px; border-radius: 12px;
+  position: relative; width: 100%; min-height: 44px; padding: 13px; border-radius: 12px;
   border: none; text-align: center; line-height: 1.15;
 }
 .rmssch-slot-dot {
@@ -335,13 +336,18 @@
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
-  font-size: 0.875rem; font-weight: 650; padding: 10px 16px; border-radius: 9px;
+  min-height: 44px; font-size: 0.875rem; font-weight: 650; padding: 10px 16px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast);
 }
 .rmssch-btn:disabled { opacity: 0.6; cursor: default; }
 /* Back button: same tile treatment as calendar days (fill + hover outline). */
-.rmssch-back { padding: 10px 16px; border-radius: 12px; border: none; font-size: 0.875rem; font-weight: 650; }
+.rmssch-back {
+  min-height: 44px; padding: 10px 16px; border-radius: 12px; border: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.875rem; font-weight: 650;
+}
 /* Spinner sits on the accent button — use the contrast color so it's visible. */
 .rmssch-btn .rmssch-spinner {
   width: 14px; height: 14px; margin-right: 2px;
