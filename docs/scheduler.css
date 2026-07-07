@@ -222,9 +222,10 @@
 /* Sparse-day helper: sits right after the slots (same gap), left-aligned. */
 .rmssch-help {
   display: flex; gap: 10px; align-items: flex-start;
-  color: var(--rmssch-muted); font-size: 0.875rem; font-weight: 650; line-height: 1.45;
+  color: color-mix(in srgb, var(--rmssch-muted) 72%, transparent);
+  font-size: 0.875rem; font-weight: 600; line-height: 1.45;
 }
-.rmssch-help-ic { flex: 0 0 20px; opacity: 0.8; margin-top: 1px; }
+.rmssch-help-ic { flex: 0 0 20px; opacity: 0.65; margin-top: 1px; }
 .rmssch-help-ic svg { width: 20px; height: 20px; display: block; }
 .rmssch-slot-dot {
   position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
