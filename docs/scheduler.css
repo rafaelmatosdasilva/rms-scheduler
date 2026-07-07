@@ -368,8 +368,10 @@
 /* Subtle hover/press polish. */
 .rmssch-cell.is-avail, .rmssch-slot, .rmssch-back, .rmssch-btn, .rmssch-daypill,
 .rmssch-seg button, .rmssch-cal-nav button, .rmssch-meet {
+  /* No outline-color transition: keyboard focus rings appear/disappear instantly
+     so moving between days doesn't leave a fading "flash" trail behind. */
   transition: transform 0.09s ease, background 0.2s ease, border-color 0.2s ease,
-              outline-color 0.22s ease, filter 0.2s ease;
+              filter 0.2s ease;
 }
 .rmssch-btn:hover:not(:disabled) { filter: brightness(1.06); }
 .rmssch-cell.is-avail:active, .rmssch-slot:active, .rmssch-back:active,
