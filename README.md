@@ -148,8 +148,8 @@ content scrolls inside):
 https://YOU.github.io/rms-scheduler/embed.html?fill=1&accent=%23ff5c00
 ```
 
-Without `?fill=1`, the widget uses fixed heights per breakpoint (phone 640 / tablet 680 /
-laptop 660 / desktop 520 px) and relies on the auto-resize listener above to size the iframe.
+Without `?fill=1`, the widget **grows to fit its content** — use the auto-resize listener
+above so the iframe follows its height (or set a tall-enough fixed iframe height).
 
 Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 (`--rmssch-accent`, `--rmssch-accent-contrast`, `--rmssch-avail-dot`, …).

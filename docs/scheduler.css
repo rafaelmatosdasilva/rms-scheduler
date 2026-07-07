@@ -14,15 +14,13 @@
   --rmssch-muted: rgba(0, 0, 0, 0.5);
   --rmssch-border: rgba(0, 0, 0, 0.1);
   --rmssch-radius: 10px;
-  --rmssch-height: 660px;   /* fixed card height (per-breakpoint overrides below) */
   --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
   width: 100%;
   max-width: 1140px;
-  /* Fixed height per breakpoint — never resizes when switching views. Taller
-     content (e.g. a long form) scrolls inside .rmssch-main. */
-  height: var(--rmssch-height, 660px);
+  /* Height grows to fit content by default; embeds can pin it (?fill=1 fills the
+     iframe box, or set a fixed height on the iframe + the auto-resize listener). */
   overflow: hidden;
   font-family: var(--rmssch-font);
   font-weight: 650;   /* base minimum weight */
@@ -226,11 +224,10 @@
 /* -- stack on narrow embeds -- */
 /* Extra breathing room on very wide viewports. */
 @media (min-width: 1680px) {
-  #rms-scheduler { max-width: 1360px; --rmssch-height: 520px; }
+  #rms-scheduler { max-width: 1360px; }
 }
 /* Stack the info panel on top once there isn't room for it beside the picker. */
 @media (max-width: 1140px) {
-  #rms-scheduler { --rmssch-height: 680px; }
   .rmssch-shell { flex-direction: column; gap: 18px; }
   .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
   .rmssch-info-title { font-size: 1.15rem; }
@@ -240,7 +237,7 @@
 }
 /* Tablet/phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 720px) {
-  #rms-scheduler { padding: 18px; --rmssch-height: 640px; }
+  #rms-scheduler { padding: 18px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 0 1 auto; min-height: 0; padding-left: 0; border-left: none; }
   .rmssch-day-head { display: none; }
