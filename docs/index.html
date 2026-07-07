@@ -18,14 +18,16 @@
     }
     hr { border: 0; border-top: 1px solid #e4e7ec; margin: 40px 0; }
 
-    /* Resizable test harness: drag the right edge to change width; the iframe
-       height auto-grows to fit via postMessage. */
+    /* Resizable test harness: drag the bottom-right corner to change BOTH width
+       and height — the widget fills the frame (fill-by-default), exactly like a
+       sized frame on Figma Sites. */
     .resizer {
-      resize: horizontal; overflow: hidden;
+      resize: both; overflow: hidden;
       width: 1000px; min-width: 320px; max-width: 1200px;
+      height: 680px; min-height: 360px;
       border: 1px dashed #cfd4dc; border-radius: 12px; background: #0f1115;
     }
-    .resizer iframe { width: 100%; height: 480px; border: 0; display: block; }
+    .resizer iframe { width: 100%; height: 100%; border: 0; display: block; }
     .hint { font-size: 0.85rem; color: #6b7280; margin: 8px 0 0; }
 
     @media (prefers-color-scheme: dark) {
@@ -44,32 +46,23 @@
     <iframe id="demoframe" title="Booking widget" scrolling="no"></iframe>
   </div>
   <script>
-    var demoframe = document.getElementById('demoframe');
-    demoframe.src = 'embed.html?_=' + Date.now();
-    window.addEventListener('message', function (e) {
-      if (e.data && e.data.type === 'rmssch:height') demoframe.style.height = e.data.height + 'px';
-    });
+    // The widget fills the frame by default, so no height listener is needed —
+    // the iframe height comes straight from the (resizable) frame above.
+    document.getElementById('demoframe').src = 'embed.html?_=' + Date.now();
   </script>
-  <p class="hint">Wide → month calendar + info panel · below ~760px → info panel stacks on top · below ~640px → month grid becomes a horizontal day strip.</p>
+  <p class="hint">The widget fills the frame at any size. Wide → month calendar + info panel · below ~1140px → info panel stacks on top · below ~720px → month grid becomes a horizontal day strip.</p>
 
   <hr>
 
   <h2>Embed it on your site</h2>
-  <p>Drop this iframe wherever you want the widget. The small script auto-grows the
-  iframe to fit the widget's height:</p>
-  <pre>&lt;iframe id="rms-frame"
+  <p>Drop this iframe wherever you want the widget. It <strong>fills the frame</strong>, so
+  just give the iframe the width and height you want (this is all Figma Sites needs too):</p>
+  <pre>&lt;iframe
   src="https://rafaelmatosdasilva.github.io/rms-scheduler/embed.html"
-  width="1000" height="480" style="border:0;width:100%" scrolling="no" title="Book a time"&gt;&lt;/iframe&gt;
-&lt;script&gt;
-  addEventListener("message", function (e) {
-    if (e.data &amp;&amp; e.data.type === "rmssch:height")
-      document.getElementById("rms-frame").style.height = e.data.height + "px";
-  });
-&lt;/script&gt;</pre>
-  <p class="hint">In Figma Sites (where you can't add the listener script), append
-  <code>?fill=1</code> to the embed URL — the widget stretches to 100% of the iframe
-  box you draw: <code>embed.html?fill=1</code>. Size the frame in Figma and the widget
-  fills it (tall content scrolls inside).</p>
+  width="1000" height="680" style="border:0" title="Book a time"&gt;&lt;/iframe&gt;</pre>
+  <p class="hint">Content taller than the frame scrolls inside. Want the iframe to
+  auto-grow to the content instead (normal web pages, not Figma Sites)? Add
+  <code>?fill=0</code> to the URL and use the postMessage height listener.</p>
 
   <p>Theme it via URL params (<code>%23</code> = <code>#</code>):</p>
   <pre>embed.html?accent=%23ff5c00&amp;bg=%23111827

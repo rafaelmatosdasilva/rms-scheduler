@@ -20,7 +20,7 @@
 
   <!-- Static tag: reliably runs inside sandboxed iframes (e.g. Figma Sites). -->
   <script
-    src="scheduler.js?v=33cd2c71"
+    src="scheduler.js?v=60dbddab"
     data-endpoint="https://script.google.com/macros/s/AKfycbxWJC_Y2T37JZIvZszOQw9akjr3PbOKsfIkVzJCrweSioxoYfXzoolv_4y8phA8hxcTIw/exec"
     data-title="Choose a time with Rafael"
     data-host-name="Rafael Matos da Silva"
@@ -61,14 +61,14 @@
         surface: '--rmssch-surface', fg: '--rmssch-fg', muted: '--rmssch-muted', border: '--rmssch-border'
       };
       Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], color(v)); });
-      // ?fill=1 — stretch the widget to 100% of the iframe box (for Figma Sites &
-      // other fixed-size embeds that can't run the auto-resize listener below).
-      // Overrides the fixed per-breakpoint heights; tall content scrolls inside.
-      if (q.get('fill')) {
+      // Fill 100% of the iframe box by DEFAULT so the widget is a constant size
+      // across every step (picker, form, confirmation) — you size it via the
+      // Figma frame. Opt out with ?fill=0 for content-height + the auto-resize
+      // listener below (tall content scrolls inside when the box is shorter).
+      if (q.get('fill') !== '0') {
         document.documentElement.style.height = '100%';
         document.body.style.height = '100%';
         el.style.height = '100%';
-        el.style.maxWidth = 'none';   // fill 100% width too — no max-width cap
       }
     })();
   </script>

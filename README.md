@@ -139,17 +139,16 @@ accent), `data-dot` (time-slot dot color).
 https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00&contrast=%23ffffff
 ```
 
-**Figma Sites (fixed-size embed):** the auto-resize listener can't run there, so append
-**`?fill=1`** — the widget stretches to **100% height of the iframe box** you draw in Figma
-(width already fills 100%). Size the frame in Figma to control the widget's footprint; tall
-content scrolls inside:
+**Figma Sites (fixed-size embed):** `embed.html` **fills 100% of the iframe box by default** —
+so the widget is a **constant size across every step** (picker, form, confirmation). Just size
+the frame in Figma to control its footprint; content taller than the box scrolls inside:
 
 ```
-https://YOU.github.io/rms-scheduler/embed.html?fill=1&accent=%23ff5c00
+https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00
 ```
 
-Without `?fill=1`, the widget **grows to fit its content** — use the auto-resize listener
-above so the iframe follows its height (or set a tall-enough fixed iframe height).
+**Opt out with `?fill=0`** if you'd rather the widget **grow to fit its content** and drive an
+auto-resizing iframe via the listener above (e.g. a normal web page, not Figma Sites).
 
 Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 (`--rmssch-accent`, `--rmssch-accent-contrast`, `--rmssch-avail-dot`, …).

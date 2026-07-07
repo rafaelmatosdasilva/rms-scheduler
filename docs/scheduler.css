@@ -59,7 +59,7 @@
   flex: 0 0 236px; min-width: 0; display: flex; flex-direction: column; gap: 16px;
   padding-right: 24px; border-right: 1px solid var(--rmssch-border);
 }
-.rmssch-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.rmssch-main { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 
 .rmssch-info-head { display: flex; flex-direction: column; gap: 14px; }
 .rmssch-host { display: flex; align-items: center; gap: 10px; }
