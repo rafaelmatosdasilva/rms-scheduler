@@ -272,7 +272,7 @@ function createBooking_(title, description, start, end, email, type) {
   if (typeof Calendar !== 'undefined' && Calendar.Events) {
     var resource = {
       summary: title,
-      description: description,
+      description: linkify_(description),   // API description supports HTML → URLs become links
       location: location || undefined,
       start: { dateTime: iso_(start), timeZone: CONFIG.TIMEZONE },
       end: { dateTime: iso_(end), timeZone: CONFIG.TIMEZONE },
@@ -298,6 +298,15 @@ function createBooking_(title, description, start, end, email, type) {
 }
 
 function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"); }
+
+// HTML-escape a plain-text description, turn http(s) URLs into clickable <a>
+// links, and keep line breaks. The Calendar API description field renders HTML.
+function linkify_(text) {
+  var s = String(text == null ? '' : text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+  return s.replace(/\n/g, '<br>');
+}
 
 // ---------------------------- HELPERS ------------------------------
 
