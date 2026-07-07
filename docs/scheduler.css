@@ -72,7 +72,9 @@
 }
 .rmssch-host-name { font-size: 0.9rem; font-weight: 650; color: var(--rmssch-muted); }
 .rmssch-info-title { font-size: 1.3rem; font-weight: 700; line-height: 1.22; }
-.rmssch-info-meta { display: flex; flex-direction: column; gap: 12px; }
+/* Rows sit side by side when there's room, wrapping to a vertical stack when the
+   panel is narrow (e.g. the 236px desktop side column). */
+.rmssch-info-meta { display: flex; flex-flow: row wrap; gap: 12px 26px; }
 .rmssch-info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; font-weight: 650; }
 .rmssch-info-row.is-muted { color: var(--rmssch-muted); font-weight: 650; }
 .rmssch-when { display: flex; flex-direction: column; gap: 2px; }
@@ -369,10 +371,9 @@
 /* Booking details sit inside an info box, everything centered. */
 /* Same look as the left info panel (plain rows), just centered. */
 .rmssch-confirm-box {
-  display: flex; flex-direction: column; gap: 12px;
+  display: flex; flex-flow: row wrap; justify-content: center; gap: 12px 26px;
   width: fit-content; max-width: 100%; margin: 14px auto;
 }
-.rmssch-confirm-box .rmssch-info-row { justify-content: center; }
 .rmssch-confirm .rmssch-note { align-self: center; margin: 0 0 4px; }
 .rmssch-meet { color: var(--rmssch-accent); font-weight: 650; text-decoration: none; }
 .rmssch-meet:hover { text-decoration: underline; }
