@@ -303,7 +303,7 @@
 .rmssch-field textarea::placeholder { color: var(--rmssch-muted); }
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
-.rmssch-field textarea { resize: vertical; min-height: 64px; }
+.rmssch-field textarea { resize: vertical; min-height: 96px; }
 /* Optional "useful link" tag next to the label. */
 .rmssch-optional { color: var(--rmssch-muted); font-weight: 650; }
 /* Required confirmation checkbox (in-person). */
