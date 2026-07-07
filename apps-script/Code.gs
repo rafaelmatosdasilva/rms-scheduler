@@ -36,6 +36,12 @@ var CONFIG = {
   // Calendar that confirmed bookings are written to (with the guest invite).
   BOOKING_CALENDAR_ID: 'c_6fcad1e1845ac5b311edec0bd7b5ccc072849f2d71a687a78ad0eb51a5fc8fde@group.calendar.google.com',
 
+  // Calendars checked for conflicts when offering slots (a slot is hidden if you
+  // are busy then). Scanning EVERY owned calendar is slow on accounts with many
+  // calendars, so default to your main calendar only. Add specific calendar IDs
+  // here if your real commitments live on other calendars.
+  BUSY_CALENDAR_IDS: ['primary'],
+
   TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
   MIN_NOTICE_MINUTES: 2880,         // earliest bookable slot from "now" (48h notice)
@@ -323,8 +329,13 @@ function getBookingCalendar_() {
 /** All owned calendars except the availability calendar. Cached per run. */
 function getBusyCalendars_() {
   if (_busyCals) return _busyCals;
+  var ids = (CONFIG.BUSY_CALENDAR_IDS && CONFIG.BUSY_CALENDAR_IDS.length) ? CONFIG.BUSY_CALENDAR_IDS : ['primary'];
   var availId = getAvailabilityCalendar_().getId();
-  _busyCals = CalendarApp.getAllOwnedCalendars().filter(function (c) { return c.getId() !== availId; });
+  _busyCals = [];
+  for (var i = 0; i < ids.length; i++) {
+    var cal = ids[i] === 'primary' ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(ids[i]);
+    if (cal && cal.getId() !== availId) _busyCals.push(cal);
+  }
   return _busyCals;
 }
 
