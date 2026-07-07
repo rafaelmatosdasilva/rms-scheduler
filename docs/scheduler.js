@@ -192,10 +192,12 @@
     if (this.root.style.minHeight) this.root.style.minHeight = '';
   };
 
-  Widget.prototype.fetchSlots = function () {
+  Widget.prototype.fetchSlots = function (attempt) {
+    attempt = attempt || 1;
     var self = this;
-    var p = PREFETCH || requestAvailability();
-    PREFETCH = null; // consume once
+    // Attempt 1 uses the prefetched promise; retries make a fresh request.
+    var p = (attempt === 1 && PREFETCH) ? PREFETCH : requestAvailability();
+    if (attempt === 1) PREFETCH = null; // consume once
     p.then(function (data) {
         if (!data || !data.ok) throw new Error((data && data.error) || 'Bad response');
         self.tz = data.timeZone || undefined;
@@ -203,10 +205,13 @@
         self.renderPicker();
       })
       .catch(function (err) {
-        try { console.error('[rms-scheduler] availability request failed:', err); } catch (_) {}
+        try { console.error('[rms-scheduler] availability request failed (attempt ' + attempt + '):', err); } catch (_) {}
+        // The first hit after the backend goes idle can be slow / time out — that
+        // request wakes it, so silently retry once before surfacing an error.
+        if (attempt < 2) { self.fetchSlots(attempt + 1); return; }
         var aborted = err && err.name === 'AbortError';
         var detail = err ? ((err.name || 'Error') + ': ' + (err.message || String(err))) : '';
-        self.renderError(aborted ? 'Timed out loading times (20s). Tap retry.' : 'Could not load available times.', detail);
+        self.renderError(aborted ? 'Taking longer than usual to load times. Tap retry.' : 'Could not load available times.', detail);
       });
   };
 
