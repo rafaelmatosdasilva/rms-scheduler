@@ -357,10 +357,16 @@ function json_(obj) {
 // authorize) to create a trigger that pings the web app every 5 minutes so it
 // stays warm. Run removeKeepWarm() to stop it.
 
+// Recompute availability and write it to the SAME cache the web app reads, so
+// the next visitor gets an instant cache hit instead of a slow (cold) recompute.
+// Runs in-process — no unreliable self-HTTP call. Reset caches per run so a
+// fresh instance recomputes cleanly.
 function keepWarm() {
   try {
-    var url = ScriptApp.getService().getUrl();
-    if (url) UrlFetchApp.fetch(url + '?action=availability&warm=1', { muteHttpExceptions: true });
+    _availabilityCal = null; _bookingCal = null; _busyCals = null;
+    var days = CONFIG.LOOKAHEAD_DAYS;
+    var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days) });
+    CacheService.getScriptCache().put('avail_' + days, payload, CONFIG.CACHE_SECONDS);
   } catch (err) {}
 }
 

@@ -92,7 +92,7 @@
   function requestAvailability() {
     var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?' : '&') + 'action=availability&_=' + Date.now();
     var ctrl = ('AbortController' in window) ? new AbortController() : null;
-    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 30000) : null;
     return fetch(url, ctrl ? { method: 'GET', signal: ctrl.signal } : { method: 'GET' })
       .then(function (r) { if (timer) clearTimeout(timer); return r.json(); })
       .catch(function (err) { if (timer) clearTimeout(timer); throw err; });
