@@ -14,14 +14,15 @@
   --rmssch-muted: rgba(0, 0, 0, 0.5);
   --rmssch-border: rgba(0, 0, 0, 0.1);
   --rmssch-radius: 10px;
+  --rmssch-height: 660px;   /* fixed card height (per-breakpoint overrides below) */
   --rmssch-font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   box-sizing: border-box;
   width: 100%;
   max-width: 1140px;
-  /* Constant height across every state — never resizes when switching views
-     or navigating months/days. Overflow is handled by inner scroll areas. */
-  height: var(--rmssch-height, 468px);
+  /* Fixed height per breakpoint — never resizes when switching views. Taller
+     content (e.g. a long form) scrolls inside .rmssch-main. */
+  height: var(--rmssch-height, 660px);
   overflow: hidden;
   font-family: var(--rmssch-font);
   font-weight: 650;   /* base minimum weight */
@@ -36,9 +37,6 @@
 }
 /* Short states sit vertically centered in the fixed-height card. */
 #rms-scheduler.rmssch-centered { justify-content: center; }
-/* The details form can exceed the fixed height — let the card grow to fit it
-   (keeping the picker height as a minimum) so nothing is clipped. */
-#rms-scheduler.rmssch-grow { height: auto; min-height: var(--rmssch-height, 468px); }
 
 /* Custom scrollbars (used by any inner scroll area). */
 .rmssch-slots, .rmssch-cal-grid { scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent; }
@@ -85,7 +83,7 @@
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
 /* Fill the column so the buttons dock at the bottom, but keep a 20px minimum
    gap to the infobox/last field when the content is tall. */
-.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .rmssch-form .rmssch-actions { margin-top: auto; }
 .rmssch-form .rmssch-note { margin-bottom: 20px; }
 
@@ -226,13 +224,11 @@
 /* -- stack on narrow embeds -- */
 /* Extra breathing room on very wide viewports. */
 @media (min-width: 1680px) {
-  #rms-scheduler { max-width: 1360px; }
+  #rms-scheduler { max-width: 1360px; --rmssch-height: 520px; }
 }
-/* Stack the info panel on top once there isn't room for it beside the picker.
-   Height goes auto here (content varies too much to pin at a fixed height). */
+/* Stack the info panel on top once there isn't room for it beside the picker. */
 @media (max-width: 1140px) {
-  #rms-scheduler { height: auto; }   /* fit content — no forced empty space */
-  #rms-scheduler.rmssch-grow { min-height: 0; }   /* mobile is already content-height */
+  #rms-scheduler { --rmssch-height: 680px; }
   .rmssch-shell { flex-direction: column; gap: 18px; }
   .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
   .rmssch-info-title { font-size: 1.15rem; }
@@ -242,7 +238,7 @@
 }
 /* Tablet/phone: drop the month grid, use a horizontal day strip + slots below. */
 @media (max-width: 720px) {
-  #rms-scheduler { padding: 18px; }
+  #rms-scheduler { padding: 18px; --rmssch-height: 640px; }
   .rmssch-cal { display: none; }
   .rmssch-day { flex: 0 1 auto; min-height: 0; padding-left: 0; border-left: none; }
   .rmssch-day-head { display: none; }

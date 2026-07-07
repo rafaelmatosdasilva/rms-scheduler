@@ -183,20 +183,10 @@
     }
   };
 
-  // Grow (never shrink) a min-height to the tallest rendered state, so the widget
-  // stays a consistent height across steps instead of resizing (e.g. picker -> form).
+  // Heights are FIXED per breakpoint in CSS (no auto-growth). Just make sure no
+  // stale inline min-height (from older builds) overrides the CSS height.
   Widget.prototype.lockHeight = function () {
-    var self = this;
-    if (self._raf) cancelAnimationFrame(self._raf);
-    self._raf = requestAnimationFrame(function () {
-      self._raf = 0;
-      var root = self.root;
-      // Don't measure before the stylesheet is applied (would be wildly tall).
-      if (!getComputedStyle(root).getPropertyValue('--rmssch-radius').trim()) return;
-      root.style.minHeight = '0px';        // release to measure natural height
-      var h = root.scrollHeight;
-      if (h > 0) { self._maxH = Math.max(self._maxH || 0, h); root.style.minHeight = self._maxH + 'px'; }
-    });
+    if (this.root.style.minHeight) this.root.style.minHeight = '';
   };
 
   Widget.prototype.fetchSlots = function () {
@@ -677,9 +667,6 @@
           '<button class="rmssch-btn" type="submit">' + btnLabel + '</button>' +
         '</div>' +
       '</form>');
-    // The details form can be taller than the picker; let the card grow to fit
-    // it (never clip) while keeping the picker's fixed height.
-    this.root.classList.add('rmssch-grow');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
     // Clear a field's invalid (red) state as soon as the visitor edits it.
