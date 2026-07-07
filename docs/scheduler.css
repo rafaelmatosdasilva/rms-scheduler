@@ -150,7 +150,7 @@
 .rmssch-cell.is-off:focus-visible { outline: 2px solid var(--rmssch-border); outline-offset: -2px; }
 .rmssch-cal-nav button:focus-visible,
 .rmssch-cal-jump:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
-.rmssch-cell:focus { outline: none; }   /* prefer :focus-visible only */
+.rmssch-cell:focus:not(:focus-visible) { outline: none; }   /* hide ring on mouse click only, keep keyboard focus */
 /* Today: subtle ring, kept when the day is also available (selected still wins). */
 .rmssch-cell.is-today { box-shadow: inset 0 0 0 1.5px var(--rmssch-border); }
 .rmssch-cell.is-today.is-sel { box-shadow: none; }
