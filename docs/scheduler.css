@@ -247,6 +247,7 @@
   /* Slots take their natural height (tight fit) but scroll past a cap. */
   .rmssch-slots { flex: 0 1 auto; max-height: 340px; }
 
+  .rmssch-daypill { min-width: 64px; }
   /* Day strip: edge-to-edge, no scrollbar (touch), with edge-fade gradients. */
   .rmssch-daystrip-wrap { position: relative; margin: 0 -18px 12px; }
   .rmssch-daystrip {
