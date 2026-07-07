@@ -49,7 +49,7 @@ var CONFIG = {
   // {first} = booker's first name; {name} = full name.
   EVENT_TITLE: 'Meeting with {name}',   // fallback when a slot's type is unknown
   EVENT_TITLE_ONLINE: 'Online session: Rafael and {first}',
-  EVENT_TITLE_INPERSON: 'In person session: Rafael and {first}',
+  EVENT_TITLE_INPERSON: 'In-person session: Rafael and {first}',
   EVENT_LOCATION: '',               // optional default location (any slot)
 
   // Online slots ("online" in the calendar-event title) get a Google Meet link.
@@ -252,7 +252,7 @@ function isBusy_(start, end) {
 function createBooking_(title, description, start, end, email, type) {
   var location;
   if (type === 'inperson') {
-    location = 'In person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION);
+    location = 'In-person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION);
     if (CONFIG.IN_PERSON_MAPS_URL) location += ' - ' + CONFIG.IN_PERSON_MAPS_URL;
   } else {
     location = CONFIG.EVENT_LOCATION;

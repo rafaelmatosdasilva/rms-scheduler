@@ -54,7 +54,7 @@
 
   // Maps a slot's type (from the calendar event title) to a label + icon.
   function slotTypeInfo(type) {
-    if (type === 'inperson') return { key: 'inperson', label: 'In person', icon: ICON.pin };
+    if (type === 'inperson') return { key: 'inperson', label: 'In-person', icon: ICON.pin };
     if (type === 'online') return { key: 'online', label: 'Online', icon: ICON.video };
     return null;
   }
@@ -343,7 +343,7 @@
       ? row(ICON.cal, esc(this.dateLabel({ start: refIso })))
       : row(ICON.cal, esc('Select a date & time'), true);
     var locRow = '';
-    if (type === 'inperson') locRow = row(ICON.pin, esc('In person at ' + INPERSON_LOCATION));
+    if (type === 'inperson') locRow = row(ICON.pin, esc('In-person at ' + INPERSON_LOCATION));
     else if (type === 'online') locRow = row(ICON.video, esc('Online via Google Meet'));
     var timeRow = '';
     if (slot) {
@@ -657,7 +657,7 @@
     var pending = type === 'inperson';
     // In-person replaces the note with a required confirmation checkbox; online keeps its note.
     var note = (type === 'online') ? ONLINE_NOTE : '';
-    var btnLabel = pending ? 'Confirm In-person Booking' : (type === 'online' ? 'Confirm Online Booking' : 'Confirm Booking');
+    var btnLabel = pending ? 'Confirm in-person session' : (type === 'online' ? 'Confirm online session' : 'Confirm session');
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
