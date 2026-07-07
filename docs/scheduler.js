@@ -38,6 +38,8 @@
     'In-person sessions require a valid LisboaUX co-working ticket and are confirmed manually.';
   var ONLINE_NOTE = attr('data-online-note') || 'The Google Meet link will be sent to you by email.';
   var INPERSON_LOCATION = attr('data-inperson-location') || 'Casa do Impacto, Lisbon';
+  // Days with few slots show an "email me" helper linking to this address.
+  var CONTACT_EMAIL = attr('data-contact-email') || 'hello@rafaelmatosdasilva.com';
 
   // width/height on the <svg> so they never render full-size before CSS loads.
   var SV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">';
@@ -49,6 +51,7 @@
     pin: SV + '<path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>',
     info: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 11.5v4.5" stroke-linecap="round"/><path d="M12 8h.01" stroke-linecap="round"/></svg>',
     hourglass: SV + '<path d="M6 4h12M6 20h12M8 4v3l4 4 4-4V4M8 20v-3l4-4 4 4v3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    mail: SV + '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
     check: SV + '<path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
@@ -617,6 +620,18 @@
       '</button>';
     }).join('');
 
+    // Sparse day (≤2 slots) → offer an "email me" helper to fill the space.
+    var help = '';
+    if (daySlots.length <= 2 && CONTACT_EMAIL) {
+      var mailto = 'mailto:' + CONTACT_EMAIL + '?subject=' +
+        encodeURIComponent('Booking help — ' + self.dateLabel({ start: iso }));
+      help = '<div class="rmssch-help">' +
+        '<span class="rmssch-help-ic">' + ICON.mail + '</span>' +
+        '<div>Only a couple of openings this day — <a class="rmssch-meet" href="' + esc(mailto) +
+        '">email me</a> and I\'ll help find a time that works.</div>' +
+      '</div>';
+    }
+
     // Horizontal day strip (shown instead of the month grid on small screens).
     var strip = this.dayKeys.map(function (key) {
       var i = self.byDay[key][0].start;
@@ -637,6 +652,7 @@
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
       '<div class="rmssch-slots">' + (allInPerson ? noteHtml(PENDING_NOTE) : '') + slots + '</div>' +
+      help +
     '</div>';
   };
 
