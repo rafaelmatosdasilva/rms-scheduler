@@ -222,7 +222,7 @@
 /* Sparse-day helper: sits right after the slots (same gap), left-aligned. */
 .rmssch-help {
   display: flex; gap: 10px; align-items: flex-start;
-  color: color-mix(in srgb, var(--rmssch-fg) 62%, transparent);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.875rem; font-weight: 600; line-height: 1.45;
 }
 .rmssch-help-ic { flex: 0 0 20px; opacity: 0.8; margin-top: 1px; }
