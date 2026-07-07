@@ -320,8 +320,8 @@
   background-color: var(--rmssch-accent); border-color: var(--rmssch-accent);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316181d' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7.5'/></svg>");
 }
-.rmssch-check input[type="checkbox"]:focus,
-.rmssch-check input[type="checkbox"]:focus-visible { outline: none; }
+.rmssch-check input[type="checkbox"]:focus { outline: none; }   /* no ring on mouse click */
+.rmssch-check input[type="checkbox"]:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 2px; }
 .rmssch-check-field.is-invalid .rmssch-check { color: #e5484d; }
 .rmssch-check-field.is-invalid .rmssch-check input[type="checkbox"] { border-color: #e5484d; }
 /* Invalid (empty required) state: red border + red asterisk. */
