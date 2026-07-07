@@ -240,7 +240,7 @@ function isBusy_(start, end) {
  * address. Falls back to CalendarApp when Meet isn't needed/available.
  */
 function createBooking_(title, description, start, end, email, type) {
-  var location = (type === 'inperson' ? (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION) : CONFIG.EVENT_LOCATION);
+  var location = (type === 'inperson' ? ('In person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION)) : CONFIG.EVENT_LOCATION);
   var wantsMeet = (type === 'online') && CONFIG.ADD_MEET_FOR_ONLINE;
 
   if (wantsMeet && typeof Calendar !== 'undefined' && Calendar.Events) {
