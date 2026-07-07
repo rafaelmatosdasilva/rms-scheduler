@@ -252,17 +252,28 @@ function createBooking_(title, description, start, end, email, type) {
   }
   var wantsMeet = (type === 'online') && CONFIG.ADD_MEET_FOR_ONLINE;
 
-  if (wantsMeet && typeof Calendar !== 'undefined' && Calendar.Events) {
+  // Use the advanced Calendar API whenever it's available so we fully control
+  // conferencing. Meet is added ONLY for online slots; for everything else we
+  // insert without conferenceData and then strip any Meet link Google may have
+  // auto-attached (the account's "automatically add Google Meet" setting).
+  if (typeof Calendar !== 'undefined' && Calendar.Events) {
     var resource = {
       summary: title,
       description: description,
       location: location || undefined,
       start: { dateTime: iso_(start), timeZone: CONFIG.TIMEZONE },
       end: { dateTime: iso_(end), timeZone: CONFIG.TIMEZONE },
-      attendees: [{ email: email }],
-      conferenceData: { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } }
+      attendees: [{ email: email }]
     };
-    return Calendar.Events.insert(resource, CONFIG.BOOKING_CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'all' });
+    if (wantsMeet) {
+      resource.conferenceData = { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
+    }
+    var ev = Calendar.Events.insert(resource, CONFIG.BOOKING_CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'all' });
+    if (!wantsMeet && (ev.hangoutLink || ev.conferenceData)) {
+      // Remove an auto-added conference so in-person invites carry no Meet link.
+      try { ev = Calendar.Events.patch({ conferenceData: null }, CONFIG.BOOKING_CALENDAR_ID, ev.id, { conferenceDataVersion: 1, sendUpdates: 'all' }); } catch (e) {}
+    }
+    return ev;
   }
 
   return getBookingCalendar_().createEvent(title, start, end, {
