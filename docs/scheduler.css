@@ -355,11 +355,10 @@
 .rmssch-confirm { text-align: center; padding: 8px 0; display: flex; flex-direction: column; align-items: center; }
 .rmssch-confirm .rmssch-title { margin-bottom: 4px; }
 /* Booking details sit inside an info box, everything centered. */
+/* Same look as the left info panel (plain rows), just centered. */
 .rmssch-confirm-box {
   display: flex; flex-direction: column; gap: 12px;
   width: fit-content; max-width: 100%; margin: 14px auto;
-  padding: 14px 18px; border-radius: 12px;
-  background: color-mix(in srgb, var(--rmssch-accent) 5%, transparent);
 }
 .rmssch-confirm-box .rmssch-info-row { justify-content: center; }
 .rmssch-confirm .rmssch-note { align-self: center; margin: 0 0 4px; }
@@ -372,7 +371,7 @@
   margin-bottom: 10px;
 }
 .rmssch-confirm-check svg { width: 22px; height: 22px; }
-.rmssch-confirm-check.is-pending { background: var(--rmssch-surface); color: var(--rmssch-fg); }
+.rmssch-confirm-check.is-pending { background: var(--rmssch-surface); color: var(--rmssch-accent); }
 /* Loading skeleton */
 .rmssch-skel {
   background: var(--rmssch-surface) !important;
