@@ -303,6 +303,15 @@
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
+/* Required confirmation checkbox (in-person). */
+.rmssch-check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; font-weight: 650; cursor: pointer; line-height: 1.35; }
+.rmssch-check input[type="checkbox"] {
+  width: 18px; height: 18px; flex: 0 0 18px; margin: 1px 0 0; padding: 0;
+  border: none; border-radius: 0; background: none; accent-color: var(--rmssch-accent); cursor: pointer;
+}
+.rmssch-check input[type="checkbox"]:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 2px; }
+.rmssch-check-field.is-invalid .rmssch-check { color: #e5484d; }
+.rmssch-check-field.is-invalid .rmssch-check input[type="checkbox"] { outline: 2px solid #e5484d; outline-offset: 2px; }
 /* Invalid (empty required) state: red border + red asterisk. */
 .rmssch-field.is-invalid .rmssch-req { color: #e5484d; }
 .rmssch-field.is-invalid input,

@@ -655,7 +655,9 @@
     var self = this;
     var type = this.selectedSlot && this.selectedSlot.type;
     var pending = type === 'inperson';
-    var note = pending ? PENDING_NOTE : (type === 'online' ? ONLINE_NOTE : '');
+    // In-person replaces the note with a required confirmation checkbox; online keeps its note.
+    var note = (type === 'online') ? ONLINE_NOTE : '';
+    var btnLabel = pending ? 'Confirm In-person Booking' : (type === 'online' ? 'Confirm Online Booking' : 'Confirm Booking');
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
@@ -664,10 +666,11 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
+        (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I confirm I have a LisboaUX co-working day ticket.</span></label></div>' : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
-          '<button class="rmssch-btn" type="submit">' + (pending ? 'Request booking' : 'Confirm booking') + '</button>' +
+          '<button class="rmssch-btn" type="submit">' + btnLabel + '</button>' +
         '</div>' +
       '</form>');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
@@ -675,6 +678,7 @@
     // Clear a field's invalid (red) state as soon as the visitor edits it.
     this.root.querySelectorAll('.rmssch-form input, .rmssch-form textarea').forEach(function (el) {
       el.addEventListener('input', function () { markField(el, false); });
+      el.addEventListener('change', function () { markField(el, false); });
     });
   };
 
@@ -689,10 +693,12 @@
     var badName = !name;
     var badEmail = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     var badNotes = !notes;
+    var badTicket = form.ticket ? !form.ticket.checked : false;   // required only for in-person
     markField(form.name, badName);
     markField(form.email, badEmail);
     markField(form.notes, badNotes);
-    if (badName || badEmail || badNotes) {
+    if (form.ticket) markField(form.ticket, badTicket);
+    if (badName || badEmail || badNotes || badTicket) {
       // No written validation feedback — just highlight the offending fields red
       // and focus the first one.
       var first = form.querySelector('.rmssch-field.is-invalid input, .rmssch-field.is-invalid textarea');
