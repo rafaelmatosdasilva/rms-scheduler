@@ -46,7 +46,9 @@ var CONFIG = {
   CONSUME_SLOT: true,
   CACHE_SECONDS: 45,                // cache availability this long (speeds loads)
 
-  EVENT_TITLE: 'Meeting with {name}',
+  EVENT_TITLE: 'Meeting with {name}',   // fallback when a slot's type is unknown
+  EVENT_TITLE_ONLINE: 'Online session with Rafael',
+  EVENT_TITLE_INPERSON: 'In person session with Rafael',
   EVENT_LOCATION: '',               // optional default location (any slot)
 
   // Online slots ("online" in the calendar-event title) get a Google Meet link.
@@ -120,10 +122,12 @@ function doPost(e) {
     // Re-check nothing else on your calendars now conflicts.
     if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
 
-    var title = CONFIG.EVENT_TITLE.replace('{name}', name);
+    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
+    var title = (type === 'inperson' && CONFIG.EVENT_TITLE_INPERSON) ? CONFIG.EVENT_TITLE_INPERSON
+      : (type === 'online' && CONFIG.EVENT_TITLE_ONLINE) ? CONFIG.EVENT_TITLE_ONLINE
+      : CONFIG.EVENT_TITLE.replace('{name}', name);
     var description = 'Booked via website.\nName: ' + name + '\nEmail: ' + email +
       (notes ? ('\n\nNotes:\n' + notes) : '');
-    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
 
     var event = createBooking_(title, description, start, end, email, type);
 
