@@ -350,7 +350,7 @@
   border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast);
 }
-.rmssch-btn svg { width: 19px; height: 19px; stroke-width: 3.6; }
+.rmssch-btn svg { width: 19px; height: 19px; stroke-width: 2.5; }
 .rmssch-btn:disabled { opacity: 0.6; cursor: default; }
 /* Back button: same tile treatment as calendar days (fill + hover outline). */
 .rmssch-back {
