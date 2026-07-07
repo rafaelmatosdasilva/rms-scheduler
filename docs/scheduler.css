@@ -96,7 +96,7 @@
 .rmssch-cal-title strong { color: var(--rmssch-fg); font-weight: 700; }
 .rmssch-cal-nav { display: flex; gap: 6px; }
 .rmssch-cal-nav button {
-  width: 44px; height: 44px; border-radius: 20px; font-size: 1.4rem; line-height: 1;
+  width: 44px; height: 44px; border-radius: 10px; font-size: 1.4rem; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   color: var(--rmssch-muted); border: 1px solid transparent;
 }
@@ -110,7 +110,7 @@
 }
 .rmssch-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .rmssch-cell {
-  position: relative; height: 46px; border-radius: 24px;
+  position: relative; height: 46px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.95rem; font-weight: 650;
 }
@@ -160,7 +160,7 @@
   margin-top: 12px; font-size: 0.875rem; color: var(--rmssch-muted); text-align: center;
 }
 .rmssch-cal-jump {
-  padding: 8px 14px; border-radius: 18px; font-size: 0.875rem; font-weight: 650;
+  padding: 8px 14px; border-radius: 9px; font-size: 0.875rem; font-weight: 650;
   color: var(--rmssch-fg); background: var(--rmssch-surface);
   border: 1px solid transparent; outline: 2px solid transparent; outline-offset: -2px;
 }
@@ -177,10 +177,10 @@
 
 .rmssch-seg {
   display: inline-flex; background: var(--rmssch-surface);
-  border-radius: 18px; padding: 3px;
+  border-radius: 9px; padding: 3px;
 }
 .rmssch-seg button {
-  min-width: 44px; min-height: 40px; padding: 0 14px; border-radius: 16px;
+  min-width: 44px; min-height: 40px; padding: 0 14px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 0.875rem; font-weight: 650; color: var(--rmssch-muted);
 }
@@ -192,7 +192,7 @@
 .rmssch-daystrip::-webkit-scrollbar-track { background: transparent; }
 .rmssch-daystrip::-webkit-scrollbar-thumb { background: var(--rmssch-border); border-radius: 6px; }
 .rmssch-daypill {
-  flex: 0 0 auto; min-width: 56px; padding: 8px 10px; border-radius: 24px;
+  flex: 0 0 auto; min-width: 56px; padding: 8px 10px; border-radius: 12px;
   background: var(--rmssch-surface); text-align: center; line-height: 1.15;
 }
 .rmssch-daypill.is-sel { background: var(--rmssch-accent); color: var(--rmssch-accent-contrast); }
@@ -208,7 +208,7 @@
   flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
 }
 .rmssch-slot {
-  position: relative; width: 100%; padding: 13px; border-radius: 24px;
+  position: relative; width: 100%; padding: 13px; border-radius: 12px;
   border: none; text-align: center; line-height: 1.15;
 }
 .rmssch-slot-dot {
@@ -324,13 +324,13 @@
 
 .rmssch-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 4px; }
 .rmssch-btn {
-  font-size: 0.875rem; font-weight: 650; padding: 10px 16px; border-radius: 18px;
+  font-size: 0.875rem; font-weight: 650; padding: 10px 16px; border-radius: 9px;
   border: 1px solid var(--rmssch-accent); background: var(--rmssch-accent);
   color: var(--rmssch-accent-contrast);
 }
 .rmssch-btn:disabled { opacity: 0.6; cursor: default; }
 /* Back button: same tile treatment as calendar days (fill + hover outline). */
-.rmssch-back { padding: 10px 16px; border-radius: 24px; border: none; font-size: 0.875rem; font-weight: 650; }
+.rmssch-back { padding: 10px 16px; border-radius: 12px; border: none; font-size: 0.875rem; font-weight: 650; }
 /* Spinner sits on the accent button — use the contrast color so it's visible. */
 .rmssch-btn .rmssch-spinner {
   width: 14px; height: 14px; margin-right: 2px;
@@ -368,7 +368,7 @@
 /* Loading skeleton */
 .rmssch-skel {
   background: var(--rmssch-surface) !important;
-  border-radius: 24px; pointer-events: none;
+  border-radius: 12px; pointer-events: none;
   animation: rmssch-pulse 1.2s ease-in-out infinite;
 }
 .rmssch-slot.rmssch-skel { min-height: 46px; }
