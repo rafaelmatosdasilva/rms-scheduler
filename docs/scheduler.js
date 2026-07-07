@@ -341,8 +341,8 @@
       ? row(ICON.cal, esc(this.dateLabel({ start: refIso })))
       : row(ICON.cal, esc('Select a date & time'), true);
     var locRow = '';
-    if (type === 'inperson') locRow = row(ICON.pin, esc(INPERSON_LOCATION));
-    else if (type === 'online') locRow = row(ICON.video, esc('Google Meet'));
+    if (type === 'inperson') locRow = row(ICON.pin, esc('In person at ' + INPERSON_LOCATION));
+    else if (type === 'online') locRow = row(ICON.video, esc('Online via Google Meet'));
     var timeRow = '';
     if (slot) {
       var d = this.durationLabel(slot);
@@ -628,9 +628,13 @@
     var strip = this.dayKeys.map(function (key) {
       var i = self.byDay[key][0].start;
       var sel = key === self.selectedDay ? ' is-sel' : '';
+      // One accent dot per available slot that day (capped), matching the month grid.
+      var n = Math.min(self.byDay[key].length, 6), dots = '';
+      for (var q = 0; q < n; q++) dots += '<i></i>';
       return '<button type="button" class="rmssch-daypill' + sel + '" data-day="' + key + '">' +
         '<span class="rmssch-daypill-dow">' + esc(new Intl.DateTimeFormat('en-US', { timeZone: self.viewTz, weekday: 'short' }).format(new Date(i))) + '</span>' +
         '<span class="rmssch-daypill-num">' + esc(new Intl.DateTimeFormat('en-US', { timeZone: self.viewTz, day: 'numeric' }).format(new Date(i))) + '</span>' +
+        '<span class="rmssch-daypill-dots">' + dots + '</span>' +
       '</button>';
     }).join('');
 
