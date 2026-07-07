@@ -657,9 +657,9 @@
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
       '<form class="rmssch-form" novalidate>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Your name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Your email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
