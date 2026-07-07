@@ -47,7 +47,9 @@
     cal: SV + '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
     globe: SV + '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>',
     pin: SV + '<path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>',
-    info: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 11.5v4.5" stroke-linecap="round"/><path d="M12 8h.01" stroke-linecap="round"/></svg>'
+    info: SV + '<circle cx="12" cy="12" r="9"/><path d="M12 11.5v4.5" stroke-linecap="round"/><path d="M12 8h.01" stroke-linecap="round"/></svg>',
+    hourglass: SV + '<path d="M6 4h12M6 20h12M8 4v3l4 4 4-4V4M8 20v-3l4-4 4 4v3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    check: SV + '<path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   // Maps a slot's type (from the calendar event title) to a label + icon.
@@ -729,10 +731,10 @@
     var title = pending ? 'Your booking request has been received.' : ('Your booking' + who + ' is confirmed.');
     this.frame(
       '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
-        '<div class="rmssch-confirm-check' + (pending ? ' is-pending' : '') + '">' + (pending ? '⏳' : '✓') + '</div>' +
+        '<div class="rmssch-confirm-check' + (pending ? ' is-pending' : '') + '">' + (pending ? ICON.hourglass : ICON.check) + '</div>' +
         '<div class="rmssch-title">' + title + '</div>' +
-        '<div class="rmssch-info-meta rmssch-confirm-meta">' + this.metaRows() + '</div>' +
-        (pending ? '<p class="rmssch-msg">' + esc(PENDING_NOTE) + '</p>' : '') +
+        '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
+        (pending ? noteHtml(PENDING_NOTE) : '') +
         '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
         (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
       '</div></div>');
