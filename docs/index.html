@@ -66,8 +66,10 @@
       document.getElementById("rms-frame").style.height = e.data.height + "px";
   });
 &lt;/script&gt;</pre>
-  <p class="hint">In Figma Sites (where you can't add the listener script) just set a
-  fixed embed height that fits the tallest state.</p>
+  <p class="hint">In Figma Sites (where you can't add the listener script), append
+  <code>?fill=1</code> to the embed URL — the widget stretches to 100% of the iframe
+  box you draw: <code>embed.html?fill=1</code>. Size the frame in Figma and the widget
+  fills it (tall content scrolls inside).</p>
 
   <p>Theme it via URL params (<code>%23</code> = <code>#</code>):</p>
   <pre>embed.html?accent=%23ff5c00&amp;bg=%23111827

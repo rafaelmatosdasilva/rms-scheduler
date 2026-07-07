@@ -139,6 +139,17 @@ accent), `data-dot` (time-slot dot color).
 https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00&contrast=%23ffffff
 ```
 
+**Figma Sites (fixed-size embed):** the auto-resize listener can't run there, so append
+**`?fill=1`** — the widget stretches to **100% of the iframe box** you draw in Figma
+(overriding the fixed per-breakpoint heights; tall content scrolls inside):
+
+```
+https://YOU.github.io/rms-scheduler/embed.html?fill=1&accent=%23ff5c00
+```
+
+Without `?fill=1`, the widget uses fixed heights per breakpoint (phone 640 / tablet 680 /
+laptop 660 / desktop 520 px) and relies on the auto-resize listener above to size the iframe.
+
 Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 (`--rmssch-accent`, `--rmssch-accent-contrast`, `--rmssch-avail-dot`, …).
 

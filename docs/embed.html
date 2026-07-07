@@ -61,6 +61,14 @@
         surface: '--rmssch-surface', fg: '--rmssch-fg', muted: '--rmssch-muted', border: '--rmssch-border'
       };
       Object.keys(tokens).forEach(function (k) { var v = q.get(k); if (v) el.style.setProperty(tokens[k], color(v)); });
+      // ?fill=1 — stretch the widget to 100% of the iframe box (for Figma Sites &
+      // other fixed-size embeds that can't run the auto-resize listener below).
+      // Overrides the fixed per-breakpoint heights; tall content scrolls inside.
+      if (q.get('fill')) {
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
+        el.style.height = '100%';
+      }
     })();
   </script>
 
