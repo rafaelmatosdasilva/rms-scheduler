@@ -656,8 +656,7 @@
       '<form class="rmssch-form" novalidate>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your name <span class="rmssch-req">*</span></span><input name="name" type="text" required autocomplete="name" placeholder="Type your name"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
-        '<div class="rmssch-field"><label><span class="rmssch-lbl">Useful link <span class="rmssch-optional">(optional)</span></span><input name="link" type="url" autocomplete="off" placeholder="e.g. your portfolio or resume link"></label></div>' +
+        '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session notes <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Share a bit about what you&#39;d like to cover, plus any relevant links."></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
         (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I confirm I have a LisboaUX co-working day ticket. <span class="rmssch-req">*</span></span></label></div>' : '') +
