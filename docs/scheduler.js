@@ -628,7 +628,7 @@
       help = '<div class="rmssch-help">' +
         '<span class="rmssch-help-ic">' + ICON.mail + '</span>' +
         '<div>Only a couple of openings this day. <a class="rmssch-meet" href="' + esc(mailto) +
-        '">Email me</a> and I\'ll help find a time that works.</div>' +
+        '">Email me</a> if you\'d like another time.</div>' +
       '</div>';
     }
 
