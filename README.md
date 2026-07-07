@@ -53,7 +53,39 @@ paste `<your-exec-url>?action=availability` into a browser. You should see JSON 
 `{"ok":true,"slots":[{"start":"2026-07-06T10:00:00+01:00","end":"2026-07-06T10:30:00+01:00"}, ...]}`.
 
 > Re-deploy note: after editing `Code.gs`, use **Deploy → Manage deployments → Edit → Version:
-> New version** so the live `/exec` URL picks up your changes (the URL stays the same).
+> New version** so the live `/exec` URL picks up your changes (the URL stays the same) —
+> or use the one-command `clasp` flow below.
+
+### Deploying backend changes with `clasp` (recommended)
+
+Instead of the editor copy-paste, push + redeploy the live web app from the repo in one command:
+
+```sh
+sh deploy-backend.sh
+```
+
+This runs `clasp push` (uploads `apps-script/Code.gs` + `appsscript.json`) then
+`clasp deploy -i <deployment-id>` to redeploy **the same** `/exec` the widget calls.
+
+**One-time setup:**
+
+```sh
+npm i -g @google/clasp@2.4.2   # pin to 2.x — clasp 3.x throws "Request contains an invalid argument"
+# Turn ON the Apps Script API for the OWNER account:
+open https://script.google.com/home/usersettings
+clasp login                    # authorize as the account that OWNS the project
+```
+
+Gotchas (learned the hard way):
+
+- **Account matters.** The project is owned by **hello@rafaelmatosdasilva.com**. `clasp login`
+  must be that account, and the Apps Script API must be enabled for *that same* account.
+  With multiple Google accounts signed in, this is the usual failure (`Could not find script`).
+- **`scriptId`** lives in [`.clasp.json`](.clasp.json); the deployment id is hard-coded in
+  [`deploy-backend.sh`](deploy-backend.sh). Get the exact `scriptId` from the editor's
+  **Project Settings → IDs → Script ID** (ambiguous `l`/`I`/`1` are easy to mistype).
+- **Manifest = advanced services.** `appsscript.json` declares the advanced **Google Calendar
+  API** service; a push would strip it (breaking Meet links) if it were missing, so keep it.
 
 ---
 
@@ -64,6 +96,18 @@ paste `<your-exec-url>?action=availability` into a browser. You should see JSON 
    **Branch:** `main` / **folder:** `/docs`.
 3. Your widget will be live at `https://YOUR-USERNAME.github.io/rms-scheduler/scheduler.js`.
 4. Edit `docs/index.html` and set `data-endpoint` to your `/exec` URL to see the live demo.
+
+**Cache-busting is automatic.** A git **pre-commit hook** runs
+[`scripts/stamp-version.mjs`](scripts/stamp-version.mjs), which hashes `scheduler.js` +
+`scheduler.css` and stamps the hash onto `embed.html`’s `scheduler.js?v=<hash>` (the CSS reuses
+the same version). So a push with changed assets always busts the browser cache — no hard-refresh
+needed. If you clone fresh, re-install the hook: `cp` the two lines below into
+`.git/hooks/pre-commit` and `chmod +x` it.
+
+```sh
+node scripts/stamp-version.mjs || exit 1
+git add docs/embed.html
+```
 
 ---
 
@@ -137,3 +181,7 @@ Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 | `docs/scheduler.js` | The embeddable widget |
 | `docs/scheduler.css` | Widget styles (prefixed `.rmssch-*`, CSS-variable themed) |
 | `docs/index.html` | Live demo + copy-paste embed snippet |
+| `docs/embed.html` | Iframe-ready page (Figma Sites etc.); carries the stamped `scheduler.js?v=` |
+| `.clasp.json` | clasp config: `scriptId` + `rootDir: apps-script` |
+| `deploy-backend.sh` | `clasp push` + redeploy the live web app in one command |
+| `scripts/stamp-version.mjs` | Content-hash asset cache-buster (run by the pre-commit hook) |
