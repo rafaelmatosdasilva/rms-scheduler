@@ -308,14 +308,22 @@
 .rmssch-optional { color: var(--rmssch-muted); font-weight: 650; }
 /* Required confirmation checkbox (in-person). */
 .rmssch-check-field .rmssch-check { display: flex; flex-direction: row; gap: 10px; align-items: flex-start; font-size: 0.875rem; font-weight: 650; cursor: pointer; line-height: 1.35; }
+/* Custom-drawn box so the border is fully stylable (red on invalid, like inputs). */
 .rmssch-check input[type="checkbox"] {
-  width: 18px; height: 18px; flex: 0 0 18px; margin: 1px 0 0; padding: 0;
-  border: none; border-radius: 0; background: none; accent-color: var(--rmssch-accent); cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  width: 18px; height: 18px; flex: 0 0 18px; margin: 1px 0 0; padding: 0; cursor: pointer;
+  border-radius: 5px; border: 1.5px solid color-mix(in srgb, var(--rmssch-fg) 30%, transparent);
+  background: var(--rmssch-surface);
+  background-repeat: no-repeat; background-position: center; background-size: 12px;
+}
+.rmssch-check input[type="checkbox"]:checked {
+  background-color: var(--rmssch-accent); border-color: var(--rmssch-accent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316181d' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7.5'/></svg>");
 }
 .rmssch-check input[type="checkbox"]:focus,
 .rmssch-check input[type="checkbox"]:focus-visible { outline: none; }
 .rmssch-check-field.is-invalid .rmssch-check { color: #e5484d; }
-.rmssch-check-field.is-invalid .rmssch-check input[type="checkbox"] { outline: 2px solid #e5484d; outline-offset: 2px; }
+.rmssch-check-field.is-invalid .rmssch-check input[type="checkbox"] { border-color: #e5484d; }
 /* Invalid (empty required) state: red border + red asterisk. */
 .rmssch-field.is-invalid .rmssch-req { color: #e5484d; }
 .rmssch-field.is-invalid input,
