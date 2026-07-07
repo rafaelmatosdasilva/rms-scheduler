@@ -55,7 +55,10 @@ var CONFIG = {
   // in the Apps Script editor (Services + -> Google Calendar API). If it isn't
   // enabled the booking still succeeds — just without the Meet link.
   ADD_MEET_FOR_ONLINE: true,
-  IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon'
+  IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon',
+  // Optional Google Maps link appended to the in-person event location so the
+  // invite gives the guest tap-to-navigate directions. Leave '' to omit.
+  IN_PERSON_MAPS_URL: 'https://maps.app.goo.gl/CjzG7Z5dszL3TsD5A'
 };
 // -------------------------------------------------------------------
 
@@ -240,7 +243,13 @@ function isBusy_(start, end) {
  * address. Falls back to CalendarApp when Meet isn't needed/available.
  */
 function createBooking_(title, description, start, end, email, type) {
-  var location = (type === 'inperson' ? ('In person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION)) : CONFIG.EVENT_LOCATION);
+  var location;
+  if (type === 'inperson') {
+    location = 'In person at ' + (CONFIG.IN_PERSON_LOCATION || CONFIG.EVENT_LOCATION);
+    if (CONFIG.IN_PERSON_MAPS_URL) location += ' — ' + CONFIG.IN_PERSON_MAPS_URL;
+  } else {
+    location = CONFIG.EVENT_LOCATION;
+  }
   var wantsMeet = (type === 'online') && CONFIG.ADD_MEET_FOR_ONLINE;
 
   if (wantsMeet && typeof Calendar !== 'undefined' && Calendar.Events) {
