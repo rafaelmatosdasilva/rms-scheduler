@@ -367,7 +367,7 @@
 
   // Wrap the current step's main content with the persistent info panel.
   Widget.prototype.shell = function (mainHtml) {
-    this.root.classList.remove('rmssch-centered');
+    this.root.classList.remove('rmssch-centered', 'rmssch-grow');
     this.frame('<div class="rmssch-shell">' + this.infoHtml() + '<div class="rmssch-main">' + mainHtml + '</div></div>');
   };
 
@@ -677,6 +677,9 @@
           '<button class="rmssch-btn" type="submit">' + btnLabel + '</button>' +
         '</div>' +
       '</form>');
+    // The details form can be taller than the picker; let the card grow to fit
+    // it (never clip) while keeping the picker's fixed height.
+    this.root.classList.add('rmssch-grow');
     this.root.querySelector('[data-back]').onclick = function () { self.selectedSlot = null; self.renderPicker(); };
     this.root.querySelector('.rmssch-form').onsubmit = function (e) { e.preventDefault(); self.submit(this); };
     // Clear a field's invalid (red) state as soon as the visitor edits it.

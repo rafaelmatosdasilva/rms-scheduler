@@ -36,6 +36,9 @@
 }
 /* Short states sit vertically centered in the fixed-height card. */
 #rms-scheduler.rmssch-centered { justify-content: center; }
+/* The details form can exceed the fixed height — let the card grow to fit it
+   (keeping the picker height as a minimum) so nothing is clipped. */
+#rms-scheduler.rmssch-grow { height: auto; min-height: var(--rmssch-height, 468px); }
 
 /* Custom scrollbars (used by any inner scroll area). */
 .rmssch-slots, .rmssch-cal-grid { scrollbar-width: thin; scrollbar-color: var(--rmssch-border) transparent; }
@@ -229,6 +232,7 @@
    Height goes auto here (content varies too much to pin at a fixed height). */
 @media (max-width: 1140px) {
   #rms-scheduler { height: auto; }   /* fit content — no forced empty space */
+  #rms-scheduler.rmssch-grow { min-height: 0; }   /* mobile is already content-height */
   .rmssch-shell { flex-direction: column; gap: 18px; }
   .rmssch-info { flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--rmssch-border); padding-right: 0; padding-bottom: 18px; }
   .rmssch-info-title { font-size: 1.15rem; }
