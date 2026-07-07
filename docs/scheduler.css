@@ -219,14 +219,12 @@
   position: relative; width: 100%; min-height: 44px; padding: 13px; border-radius: 12px;
   border: none; text-align: center; line-height: 1.15;
 }
-/* Sparse-day helper: fills the empty area below the slots with an email CTA. */
-.rmssch-day:has(.rmssch-help) .rmssch-slots { flex: 0 1 auto; }
+/* Sparse-day helper: sits right after the slots (same gap), left-aligned. */
 .rmssch-help {
-  flex: 1 1 auto; display: flex; gap: 12px; align-items: center; justify-content: center;
-  text-align: center; padding: 24px 8px; color: var(--rmssch-muted);
-  font-size: 0.875rem; font-weight: 650; line-height: 1.45;
+  display: flex; gap: 10px; align-items: flex-start;
+  color: var(--rmssch-muted); font-size: 0.875rem; font-weight: 650; line-height: 1.45;
 }
-.rmssch-help-ic { flex: 0 0 20px; opacity: 0.8; }
+.rmssch-help-ic { flex: 0 0 20px; opacity: 0.8; margin-top: 1px; }
 .rmssch-help-ic svg { width: 20px; height: 20px; display: block; }
 .rmssch-slot-dot {
   position: absolute; left: 14px; top: 50%; transform: translateY(-50%);

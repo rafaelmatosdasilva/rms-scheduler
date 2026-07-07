@@ -624,11 +624,11 @@
     var help = '';
     if (daySlots.length <= 2 && CONTACT_EMAIL) {
       var mailto = 'mailto:' + CONTACT_EMAIL + '?subject=' +
-        encodeURIComponent('Booking help — ' + self.dateLabel({ start: iso }));
+        encodeURIComponent('Booking help: ' + self.dateLabel({ start: iso }));
       help = '<div class="rmssch-help">' +
         '<span class="rmssch-help-ic">' + ICON.mail + '</span>' +
-        '<div>Only a couple of openings this day — <a class="rmssch-meet" href="' + esc(mailto) +
-        '">email me</a> and I\'ll help find a time that works.</div>' +
+        '<div>Only a couple of openings this day. <a class="rmssch-meet" href="' + esc(mailto) +
+        '">Email me</a> and I\'ll help find a time that works.</div>' +
       '</div>';
     }
 
@@ -651,8 +651,7 @@
       '<div class="rmssch-day-head">' +
         '<div class="rmssch-day-title"><strong>' + esc(wd) + '</strong> ' + esc(dd) + '</div>' +
       '</div>' +
-      '<div class="rmssch-slots">' + (allInPerson ? noteHtml(PENDING_NOTE) : '') + slots + '</div>' +
-      help +
+      '<div class="rmssch-slots">' + (allInPerson ? noteHtml(PENDING_NOTE) : '') + slots + help + '</div>' +
     '</div>';
   };
 
