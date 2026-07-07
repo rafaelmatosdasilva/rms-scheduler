@@ -303,6 +303,13 @@
 .rmssch-field input:focus,
 .rmssch-field textarea:focus { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; }
 .rmssch-field textarea { resize: vertical; min-height: 64px; }
+/* Optional "useful links" — a standalone label + one-or-more URL inputs. */
+.rmssch-field > .rmssch-lbl { display: block; font-size: 0.875rem; font-weight: 650; margin-bottom: 6px; }
+.rmssch-optional { color: var(--rmssch-muted); font-weight: 650; }
+.rmssch-links { display: flex; flex-direction: column; gap: 8px; }
+.rmssch-add-link { margin-top: 8px; padding: 0; font-size: 0.875rem; font-weight: 650; color: var(--rmssch-accent); background: none; border: none; cursor: pointer; }
+.rmssch-add-link:hover { text-decoration: underline; }
+.rmssch-add-link:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 2px; }
 /* Required confirmation checkbox (in-person). */
 .rmssch-check-field .rmssch-check { display: flex; flex-direction: row; gap: 10px; align-items: flex-start; font-size: 0.875rem; font-weight: 650; cursor: pointer; line-height: 1.35; }
 .rmssch-check input[type="checkbox"] {

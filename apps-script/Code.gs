@@ -101,6 +101,11 @@ function doPost(e) {
     var email = (body.email || '').toString().trim();
     var notes = (body.notes || '').toString().trim();
     var startIso = (body.start || '').toString().trim();
+    // Optional useful links (portfolio, resume, …). Trim, drop blanks, cap at 10.
+    var links = (Array.isArray(body.links) ? body.links : [])
+      .map(function (l) { return (l || '').toString().trim(); })
+      .filter(Boolean)
+      .slice(0, 10);
 
     if (!name) return json_({ ok: false, reason: 'invalid', message: 'Name is required.' });
     if (!isEmail_(email)) return json_({ ok: false, reason: 'invalid', message: 'A valid email is required.' });
@@ -130,7 +135,8 @@ function doPost(e) {
       : CONFIG.EVENT_TITLE;
     var title = titleTpl.replace('{name}', name).replace('{first}', first);
     var description = 'Name: ' + name + '\nEmail: ' + email +
-      (notes ? ('\n\nNotes:\n' + notes) : '');
+      (notes ? ('\n\nNotes:\n' + notes) : '') +
+      (links.length ? ('\n\nLinks:\n' + links.map(function (l) { return '- ' + l; }).join('\n')) : '');
 
     var event = createBooking_(title, description, start, end, email, type);
 
