@@ -82,7 +82,9 @@
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
 /* Fill the column so the buttons dock at the bottom, but keep a 20px minimum
    gap to the infobox/last field when the content is tall. */
-.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+/* padding gives the inputs' focus outline room so the scroll container
+   (overflow) doesn't clip it on the sides. */
+.rmssch-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 3px 4px; }
 .rmssch-form .rmssch-actions { margin-top: auto; }
 .rmssch-form .rmssch-note { margin-bottom: 20px; }
 
@@ -266,7 +268,7 @@
   .rmssch-info-row, .rmssch-slot-dur, .rmssch-note, .rmssch-sub,
   .rmssch-field label { font-size: 0.875rem; }
   /* Taller Session-goals field so the long placeholder fits without scrolling. */
-  .rmssch-field textarea { min-height: 90px; }
+  .rmssch-field textarea { min-height: 106px; }
   /* Comfortable touch targets (but not the confirmation checkbox). */
   .rmssch-field input:not([type="checkbox"]) { min-height: 44px; }
   .rmssch-btn, .rmssch-back { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
@@ -276,8 +278,6 @@
   #rms-scheduler { padding: 14px; }
   .rmssch-daystrip-wrap { margin-left: -14px; margin-right: -14px; }
   .rmssch-daystrip { padding-left: 14px; padding-right: 14px; }
-  /* Give the Session-goals field a bit more room on the tightest screens. */
-  .rmssch-field textarea { min-height: 106px; }
 }
 
 /* ============================ FORM ============================= */
