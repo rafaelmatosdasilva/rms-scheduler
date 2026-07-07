@@ -666,7 +666,7 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session goals <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Portfolio feedback, freelancing advice, design systems, or career guidance"></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (note ? noteHtml(note) : '') +
-        (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I confirm I have a LisboaUX co-working day ticket.</span></label></div>' : '') +
+        (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I confirm I have a LisboaUX co-working day ticket. <span class="rmssch-req">*</span></span></label></div>' : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
