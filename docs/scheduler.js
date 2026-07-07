@@ -648,8 +648,6 @@
     var self = this;
     var type = this.selectedSlot && this.selectedSlot.type;
     var pending = type === 'inperson';
-    // In-person replaces the note with a required confirmation checkbox; online keeps its note.
-    var note = (type === 'online') ? ONLINE_NOTE : '';
     var btnLabel = pending ? 'Confirm in-person session' : (type === 'online' ? 'Confirm online session' : 'Confirm session');
     this.shell(
       '<div class="rmssch-form-head">Enter your details</div>' +
@@ -658,7 +656,6 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your email <span class="rmssch-req">*</span></span><input name="email" type="email" required autocomplete="email" placeholder="Type your email"></label></div>' +
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session notes <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Share a bit about what you&#39;d like to cover, plus any relevant links."></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
-        (note ? noteHtml(note) : '') +
         (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I have a valid LisboaUX co-working day ticket. <span class="rmssch-req">*</span></span></label></div>' : '') +
         '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
         '<div class="rmssch-actions">' +
