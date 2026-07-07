@@ -59,7 +59,7 @@
 .rmssch-shell { display: flex; gap: 26px; align-items: stretch; width: 100%; flex: 1 1 auto; min-height: 0; }
 .rmssch-info {
   flex: 0 0 236px; min-width: 0; display: flex; flex-direction: column; gap: 16px;
-  padding-right: 24px; border-right: 1px solid var(--rmssch-border);
+  padding-right: 24px;
 }
 .rmssch-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 
@@ -169,7 +169,7 @@
 /* -- day / time panel -- */
 .rmssch-day {
   flex: 1 1 42%; min-width: 210px; display: flex; flex-direction: column;
-  padding-left: 22px; border-left: 1px solid var(--rmssch-border);
+  padding-left: 22px;
 }
 .rmssch-day-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .rmssch-day-title { font-size: 1.15rem; color: var(--rmssch-muted); }
