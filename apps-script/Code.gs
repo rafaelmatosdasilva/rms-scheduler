@@ -44,8 +44,8 @@ var CONFIG = {
 
   TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
-  MIN_NOTICE_MINUTES: 2880,         // default notice (48h) — applies to online/other slots
-  MIN_NOTICE_MINUTES_INPERSON: 600, // in-person slots only need 10h notice
+  MIN_NOTICE_MINUTES: 600,          // default notice (10h) — applies to online/other slots
+  MIN_NOTICE_MINUTES_INPERSON: 600, // in-person slots also need 10h notice
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
   // Delete the availability event on booking so the slot is removed at the source
   // and can never be double-booked (the busy-check alone misses advanced-API/Meet
