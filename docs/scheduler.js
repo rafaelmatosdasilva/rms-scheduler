@@ -94,7 +94,13 @@
     var ctrl = ('AbortController' in window) ? new AbortController() : null;
     var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 30000) : null;
     return fetch(url, ctrl ? { method: 'GET', signal: ctrl.signal } : { method: 'GET' })
-      .then(function (r) { if (timer) clearTimeout(timer); return r.json(); })
+      .then(function (r) {
+        if (timer) clearTimeout(timer);
+        // Apps Script's /exec redirect layer sometimes returns a transient 404/5xx;
+        // treat any non-OK status as a retryable error instead of parsing HTML as JSON.
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
       .catch(function (err) { if (timer) clearTimeout(timer); throw err; });
   }
   var PREFETCH = ENDPOINT ? requestAvailability() : null;
@@ -206,9 +212,10 @@
       })
       .catch(function (err) {
         try { console.error('[rms-scheduler] availability request failed (attempt ' + attempt + '):', err); } catch (_) {}
-        // The first hit after the backend goes idle can be slow / time out — that
-        // request wakes it, so silently retry once before surfacing an error.
-        if (attempt < 2) { self.fetchSlots(attempt + 1); return; }
+        // Apps Script's /exec is flaky (transient 404s) and the first hit after the
+        // backend goes idle can be slow. Silently retry a few times (short backoff)
+        // before surfacing an error — most blips clear within a retry or two.
+        if (attempt < 4) { setTimeout(function () { self.fetchSlots(attempt + 1); }, 700); return; }
         var aborted = err && err.name === 'AbortError';
         var detail = err ? ((err.name || 'Error') + ': ' + (err.message || String(err))) : '';
         self.renderError(aborted ? 'Taking longer than usual to load times. Tap retry.' : 'Could not load available times.', detail);
