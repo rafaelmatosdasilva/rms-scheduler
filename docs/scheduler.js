@@ -750,12 +750,12 @@
     var who = HOST_NAME ? ' with ' + esc(HOST_NAME) : '';
     var title = pending ? 'Your booking request has been received.' : ('Your booking' + who + ' is confirmed.');
     this.frame(
-      '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
+      '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">' + ICON.check + '</div>' +
         '<div class="rmssch-title">' + title + '</div>' +
         '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
         noteHtml('A calendar invite is on its way to ' + email + '.') +
-      '</div></div>');
+      '</div>');
   };
 
   // ---- utils -----------------------------------------------------
