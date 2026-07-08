@@ -358,7 +358,7 @@
       var d = this.durationLabel(slot);
       timeRow = row(ICON.clock, esc(this.timeRangeLabel(slot) + (d ? ', ' + d : '')));
     }
-    return locRow + dateRow + timeRow;
+    return dateRow + locRow + timeRow;
   };
 
   // Left event-info panel.
