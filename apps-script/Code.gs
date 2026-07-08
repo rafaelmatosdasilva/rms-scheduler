@@ -76,7 +76,9 @@ var CONFIG = {
 function doGet(e) {
   try {
     var action = (e && e.parameter && e.parameter.action) || 'availability';
-    if (action !== 'availability') return json_({ ok: false, error: 'unknown action' });
+    if (action !== 'availability' && action !== 'inperson-availability') {
+      return json_({ ok: false, error: 'unknown action' });
+    }
     var days = clampInt_((e && e.parameter && e.parameter.days), CONFIG.LOOKAHEAD_DAYS, 1, CONFIG.LOOKAHEAD_DAYS);
 
     // Short cache so repeat loads are instant. Booking clears it (see doPost);
@@ -84,12 +86,24 @@ function doGet(e) {
     var cache = CacheService.getScriptCache();
     var key = 'avail_' + days;
     var hit = cache.get(key);
-    if (hit) return ContentService.createTextOutput(hit).setMimeType(ContentService.MimeType.JSON);
+    var payload = hit;
+    if (!payload) {
+      payload = JSON.stringify({
+        ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days)
+      });
+      cache.put(key, payload, CONFIG.CACHE_SECONDS);
+    }
 
-    var payload = JSON.stringify({
-      ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days)
-    });
-    cache.put(key, payload, CONFIG.CACHE_SECONDS);
+    // Dedicated, scoped endpoint: ALWAYS returns only in-person slots, no matter
+    // what params are passed — safe to hand to a third party without exposing
+    // online slots or anything else.
+    if (action === 'inperson-availability') {
+      var full = JSON.parse(payload);
+      var onlyInPerson = (full.slots || []).filter(function (s) { return s.type === 'inperson'; })
+        .map(function (s) { return { start: s.start, end: s.end }; });
+      return json_({ ok: true, timeZone: full.timeZone, slots: onlyInPerson });
+    }
+
     return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return json_({ ok: false, error: String(err) });
