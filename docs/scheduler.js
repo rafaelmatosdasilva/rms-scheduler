@@ -746,7 +746,6 @@
   // Full-width centered confirmation — no side info panel.
   Widget.prototype.renderConfirm = function (name, email, data) {
     this.root.classList.add('rmssch-centered');
-    var meet = data && data.meetLink;
     var pending = this.selectedSlot && this.selectedSlot.type === 'inperson';
     var who = HOST_NAME ? ' with ' + esc(HOST_NAME) : '';
     var title = pending ? 'Your booking request has been received.' : ('Your booking' + who + ' is confirmed.');
@@ -756,7 +755,6 @@
         '<div class="rmssch-title">' + title + '</div>' +
         '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
         noteHtml('A calendar invite is on its way to ' + email + '.') +
-        (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
       '</div></div>');
   };
 
