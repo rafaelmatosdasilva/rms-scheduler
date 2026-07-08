@@ -752,11 +752,10 @@
     var title = pending ? 'Your booking request has been received.' : ('Your booking' + who + ' is confirmed.');
     this.frame(
       '<div class="rmssch-narrow"><div class="rmssch-confirm">' +
-        '<div class="rmssch-confirm-check' + (pending ? ' is-pending' : '') + '">' + (pending ? ICON.hourglass : ICON.check) + '</div>' +
+        '<div class="rmssch-confirm-check">' + ICON.check + '</div>' +
         '<div class="rmssch-title">' + title + '</div>' +
         '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
-        (pending ? noteHtml(PENDING_NOTE) : '') +
-        '<p class="rmssch-msg">A calendar invite is on its way to ' + esc(email) + '.</p>' +
+        noteHtml('A calendar invite is on its way to ' + email + '.') +
         (meet ? '<p class="rmssch-msg"><a class="rmssch-meet" href="' + esc(meet) + '" target="_blank" rel="noopener">Join with Google Meet</a></p>' : '') +
       '</div></div>');
   };
