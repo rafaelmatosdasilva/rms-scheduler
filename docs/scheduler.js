@@ -728,7 +728,7 @@
     btn.innerHTML = '<span class="rmssch-spinner"></span> Booking…';
 
     var links = [].map.call(form.querySelectorAll('[name="link"]'), function (el) { return el.value.trim(); }).filter(Boolean);
-    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), links: links, hp: form.hp_check.value };
+    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), links: links, ticket: form.ticket ? form.ticket.checked : true, hp: form.hp_check.value };
     fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json(); })
       .then(function (data) {

@@ -115,6 +115,15 @@ function doPost(e) {
     var body = {};
     try { body = JSON.parse(e.postData.contents); } catch (_) {}
 
+    // action=book (default, used by the widget) books any slot type.
+    // action=book-inperson is a scoped booking endpoint for 3rd-party integrations:
+    // it ONLY succeeds for in-person slots, and requires the ticket confirmation
+    // (the widget enforces this via its checkbox; a direct API caller must send it).
+    var action = (e && e.parameter && e.parameter.action) || 'book';
+    if (action !== 'book' && action !== 'book-inperson') {
+      return json_({ ok: false, error: 'unknown action' });
+    }
+
     // Honeypot: real users never fill this hidden field. Pretend success, book
     // nothing. (Named hp_check, not "company", so browser autofill won't trip it.)
     if (body.hp) return json_({ ok: true, spam: true });
@@ -151,6 +160,14 @@ function doPost(e) {
     if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
 
     var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
+
+    if (action === 'book-inperson' && type !== 'inperson') {
+      return json_({ ok: false, reason: 'invalid', message: 'This endpoint only books in-person slots.' });
+    }
+    if (type === 'inperson' && !body.ticket) {
+      return json_({ ok: false, reason: 'invalid', message: 'A valid LisboaUX co-working day ticket is required.' });
+    }
+
     var first = (name || '').trim().split(/\s+/)[0] || name;
     var titleTpl = (type === 'inperson' && CONFIG.EVENT_TITLE_INPERSON) ? CONFIG.EVENT_TITLE_INPERSON
       : (type === 'online' && CONFIG.EVENT_TITLE_ONLINE) ? CONFIG.EVENT_TITLE_ONLINE
