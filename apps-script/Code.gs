@@ -47,9 +47,10 @@ var CONFIG = {
   MIN_NOTICE_MINUTES: 600,          // default notice (10h) — applies to online/other slots
   MIN_NOTICE_MINUTES_INPERSON: 600, // in-person slots also need 10h notice
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
-  // Delete the availability event on booking so the slot is removed at the source
-  // and can never be double-booked (the busy-check alone misses advanced-API/Meet
-  // bookings). To re-open a slot after a cancellation, re-add it to the calendar.
+  // Delete the availability event on booking so the slot is removed at the source.
+  // doPost claims the slot (delete-first) inside a script lock, and the booking
+  // calendar is included in the busy-check, so a slot isn't double-booked. To
+  // re-open a slot after a cancellation, re-add it to the calendar.
   CONSUME_SLOT: true,
   CACHE_SECONDS: 180,               // 3 min safety margin — keep-warm (every 1 min) and the
                                     // calendar-edit trigger both refresh this cache well
@@ -154,53 +155,87 @@ function doPost(e) {
       return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
     }
 
-    // The slot must still exist on the availability calendar. This also gives
-    // us the authoritative end time (visitors can't tamper with duration).
-    var slotEvent = findAvailabilityEvent_(start);
-    if (!slotEvent) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot is no longer available.' });
-    var end = slotEvent.getEndTime();
-    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
-
-    // Notice window depends on slot type (in-person needs less lead time).
-    if (start < new Date(now.getTime() + noticeMinutesForType_(type) * 60000)) {
-      return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
+    // Serialize the check -> claim -> create section. Apps Script runs doPost
+    // concurrently with no auto-locking, so without this two overlapping POSTs
+    // for the same slot could both pass the checks below and both send an invite.
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(15000);
+    } catch (lockErr) {
+      return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
     }
+    try {
+      // The slot must still exist on the availability calendar. This also gives
+      // us the authoritative end time (visitors can't tamper with duration).
+      var slotEvent = findAvailabilityEvent_(start);
+      if (!slotEvent) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot is no longer available.' });
+      var slotTitle = slotEvent.getTitle();
+      var end = slotEvent.getEndTime();
+      var type = slotType_(slotTitle);   // 'online' | 'inperson' | ''
 
-    // Re-check nothing else on your calendars now conflicts.
-    if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
+      // Notice window depends on slot type (in-person needs less lead time).
+      if (start < new Date(now.getTime() + noticeMinutesForType_(type) * 60000)) {
+        return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
+      }
 
-    if (action === 'book-inperson' && type !== 'inperson') {
-      return json_({ ok: false, reason: 'invalid', message: 'This endpoint only books in-person slots.' });
+      // Re-check nothing else on your calendars now conflicts (this includes the
+      // booking calendar, so an existing confirmed booking blocks the slot too).
+      if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
+
+      if (action === 'book-inperson' && type !== 'inperson') {
+        return json_({ ok: false, reason: 'invalid', message: 'This endpoint only books in-person slots.' });
+      }
+      if (type === 'inperson' && !body.ticket) {
+        return json_({ ok: false, reason: 'invalid', message: 'A valid LisboaUX co-working day ticket is required.' });
+      }
+
+      // Claim the slot FIRST by deleting the source availability event, so the
+      // time is atomically reserved before the booking is written. If the delete
+      // fails (transient Calendar error), abort rather than confirm a booking on
+      // a still-live slot — otherwise the next visitor could book the same time.
+      if (CONFIG.CONSUME_SLOT) {
+        var consumed = false;
+        for (var attempt = 0; attempt < 2 && !consumed; attempt++) {
+          try { slotEvent.deleteEvent(); consumed = true; } catch (delErr) {}
+        }
+        if (!consumed) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
+      }
+
+      var first = (name || '').trim().split(/\s+/)[0] || name;
+      var titleTpl = (type === 'inperson' && CONFIG.EVENT_TITLE_INPERSON) ? CONFIG.EVENT_TITLE_INPERSON
+        : (type === 'online' && CONFIG.EVENT_TITLE_ONLINE) ? CONFIG.EVENT_TITLE_ONLINE
+        : CONFIG.EVENT_TITLE;
+      var title = titleTpl.replace('{name}', name).replace('{first}', first);
+      var description = 'Name: ' + name + '\nEmail: ' + email +
+        (notes ? ('\n\nNotes:\n' + notes) : '') +
+        (links.length ? ('\n\nLinks:\n' + links.map(function (l) { return '- ' + l; }).join('\n')) : '');
+
+      var event;
+      try {
+        event = createBooking_(title, description, start, end, email, type);
+      } catch (bookErr) {
+        // Booking write failed after the slot was consumed — restore the slot so
+        // it isn't silently lost, then surface the error.
+        if (CONFIG.CONSUME_SLOT) {
+          try { getAvailabilityCalendar_().createEvent(slotTitle, start, end); } catch (_) {}
+        }
+        return json_({ ok: false, error: String(bookErr) });
+      }
+
+      // Invalidate the availability cache so the booked slot disappears at once.
+      try { CacheService.getScriptCache().remove('avail_' + CONFIG.LOOKAHEAD_DAYS); } catch (_) {}
+
+      return json_({
+        ok: true,
+        eventId: event.id || (event.getId && event.getId()),
+        meetLink: event.hangoutLink || '',
+        type: type,
+        start: Utilities.formatDate(start, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+        end: Utilities.formatDate(end, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
+      });
+    } finally {
+      try { lock.releaseLock(); } catch (_) {}
     }
-    if (type === 'inperson' && !body.ticket) {
-      return json_({ ok: false, reason: 'invalid', message: 'A valid LisboaUX co-working day ticket is required.' });
-    }
-
-    var first = (name || '').trim().split(/\s+/)[0] || name;
-    var titleTpl = (type === 'inperson' && CONFIG.EVENT_TITLE_INPERSON) ? CONFIG.EVENT_TITLE_INPERSON
-      : (type === 'online' && CONFIG.EVENT_TITLE_ONLINE) ? CONFIG.EVENT_TITLE_ONLINE
-      : CONFIG.EVENT_TITLE;
-    var title = titleTpl.replace('{name}', name).replace('{first}', first);
-    var description = 'Name: ' + name + '\nEmail: ' + email +
-      (notes ? ('\n\nNotes:\n' + notes) : '') +
-      (links.length ? ('\n\nLinks:\n' + links.map(function (l) { return '- ' + l; }).join('\n')) : '');
-
-    var event = createBooking_(title, description, start, end, email, type);
-
-    // Consume the availability slot so it can't be booked again.
-    if (CONFIG.CONSUME_SLOT) { try { slotEvent.deleteEvent(); } catch (_) {} }
-
-    // Invalidate the availability cache so the booked slot disappears at once.
-    try { CacheService.getScriptCache().remove('avail_' + CONFIG.LOOKAHEAD_DAYS); } catch (_) {}
-
-    return json_({
-      ok: true,
-      eventId: event.id || (event.getId && event.getId()),
-      meetLink: event.hangoutLink || '',
-      type: type,
-      start: Utilities.formatDate(start, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-      end: Utilities.formatDate(end, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
-    });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
@@ -373,15 +408,24 @@ function getBookingCalendar_() {
   return _bookingCal;
 }
 
-/** All owned calendars except the availability calendar. Cached per run. */
+/** Calendars scanned for conflicts: the configured busy calendars PLUS the
+ * booking calendar (so a confirmed booking blocks the time), minus the
+ * availability calendar (whose events are offers, not commitments). Deduped and
+ * cached per run. */
 function getBusyCalendars_() {
   if (_busyCals) return _busyCals;
-  var ids = (CONFIG.BUSY_CALENDAR_IDS && CONFIG.BUSY_CALENDAR_IDS.length) ? CONFIG.BUSY_CALENDAR_IDS : ['primary'];
+  var ids = (CONFIG.BUSY_CALENDAR_IDS && CONFIG.BUSY_CALENDAR_IDS.length) ? CONFIG.BUSY_CALENDAR_IDS.slice() : ['primary'];
+  if (CONFIG.BOOKING_CALENDAR_ID) ids.push(CONFIG.BOOKING_CALENDAR_ID);
   var availId = getAvailabilityCalendar_().getId();
   _busyCals = [];
+  var seen = {};
   for (var i = 0; i < ids.length; i++) {
     var cal = ids[i] === 'primary' ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(ids[i]);
-    if (cal && cal.getId() !== availId) _busyCals.push(cal);
+    if (!cal) continue;
+    var id = cal.getId();
+    if (id === availId || seen[id]) continue;   // skip offers + duplicates
+    seen[id] = true;
+    _busyCals.push(cal);
   }
   return _busyCals;
 }
