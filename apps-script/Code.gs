@@ -50,9 +50,9 @@ var CONFIG = {
   // and can never be double-booked (the busy-check alone misses advanced-API/Meet
   // bookings). To re-open a slot after a cancellation, re-add it to the calendar.
   CONSUME_SLOT: true,
-  CACHE_SECONDS: 600,               // 10 min — keep-warm (every 5 min) keeps this cache
-                                    // populated so visitors get an instant, pre-computed
-                                    // response instead of a slow recompute. Booking clears it.
+  CACHE_SECONDS: 180,               // 3 min safety margin — keep-warm (every 1 min) and the
+                                    // calendar-edit trigger both refresh this cache well
+                                    // before it would expire on its own. Booking clears it.
 
   // {first} = booker's first name; {name} = full name.
   EVENT_TITLE: 'Meeting with {name}',   // fallback when a slot's type is unknown
@@ -385,20 +385,23 @@ function json_(obj) {
 // ------------------------- KEEP-WARM (optional) --------------------
 // Apps Script web apps go "cold" after a few idle minutes, making the next
 // request slow. Run setupKeepWarm() ONCE from the editor (press Run, then
-// authorize) to create a trigger that pings the web app every 5 minutes so it
-// stays warm. Run removeKeepWarm() to stop it.
+// authorize) to create a trigger that keeps it warm. Run removeKeepWarm() to stop it.
 
 // Recompute availability and write it to the SAME cache the web app reads, so
 // the next visitor gets an instant cache hit instead of a slow (cold) recompute.
 // Runs in-process — no unreliable self-HTTP call. Reset caches per run so a
-// fresh instance recomputes cleanly.
-function keepWarm() {
+// fresh instance recomputes cleanly. Shared by the keep-warm timer AND the
+// calendar-edit trigger below, so both "on a schedule" and "the moment you edit
+// the calendar" refresh the exact same cache.
+function refreshAvailabilityCache_() {
   _availabilityCal = null; _bookingCal = null; _busyCals = null;
-  try {
-    var days = CONFIG.LOOKAHEAD_DAYS;
-    var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days) });
-    CacheService.getScriptCache().put('avail_' + days, payload, CONFIG.CACHE_SECONDS);
-  } catch (err) {}
+  var days = CONFIG.LOOKAHEAD_DAYS;
+  var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days) });
+  CacheService.getScriptCache().put('avail_' + days, payload, CONFIG.CACHE_SECONDS);
+}
+
+function keepWarm() {
+  try { refreshAvailabilityCache_(); } catch (err) {}
   // Piggyback an hourly cleanup of expired/unbookable slots (no separate trigger).
   try {
     var props = PropertiesService.getScriptProperties();
@@ -407,6 +410,31 @@ function keepWarm() {
       props.setProperty('lastCleanup', String(Date.now()));
     }
   } catch (err) {}
+}
+
+// ------------------- LIVE REFRESH ON CALENDAR EDIT ------------------
+// Fires whenever an event on the AVAILABILITY calendar is created, edited, or
+// deleted (Google's calendar-change triggers usually fire within roughly a
+// minute of the edit — not instant, but close). Immediately refreshes the
+// cache so your manual calendar changes show up in the widget without waiting
+// for the next keep-warm tick. Run setupCalendarChangeTrigger() ONCE from the
+// editor to enable; removeCalendarChangeTrigger() to disable.
+function onAvailabilityChange() {
+  try { refreshAvailabilityCache_(); } catch (err) {}
+}
+
+function setupCalendarChangeTrigger() {
+  removeCalendarChangeTrigger();
+  ScriptApp.newTrigger('onAvailabilityChange')
+    .forUserCalendar(CONFIG.AVAILABILITY_CALENDAR_ID)
+    .onEventUpdated()
+    .create();
+}
+
+function removeCalendarChangeTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'onAvailabilityChange') ScriptApp.deleteTrigger(t);
+  });
 }
 
 // Delete availability slots that can no longer be booked (past, or now inside the
@@ -432,7 +460,7 @@ function cleanupExpiredSlots() {
 
 function setupKeepWarm() {
   removeKeepWarm();
-  ScriptApp.newTrigger('keepWarm').timeBased().everyMinutes(5).create();
+  ScriptApp.newTrigger('keepWarm').timeBased().everyMinutes(1).create();
 }
 
 function removeKeepWarm() {
