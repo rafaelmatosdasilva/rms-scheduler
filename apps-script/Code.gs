@@ -44,7 +44,8 @@ var CONFIG = {
 
   TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
-  MIN_NOTICE_MINUTES: 2880,         // earliest bookable slot from "now" (48h notice)
+  MIN_NOTICE_MINUTES: 2880,         // default notice (48h) — applies to online/other slots
+  MIN_NOTICE_MINUTES_INPERSON: 960, // in-person slots only need 16h notice
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
   // Delete the availability event on booking so the slot is removed at the source
   // and can never be double-booked (the busy-check alone misses advanced-API/Meet
@@ -149,8 +150,7 @@ function doPost(e) {
     if (isNaN(start.getTime())) return json_({ ok: false, reason: 'invalid', message: 'Invalid time.' });
 
     var now = new Date();
-    if (start < new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000) ||
-        start > new Date(now.getTime() + CONFIG.LOOKAHEAD_DAYS * 86400000)) {
+    if (start > new Date(now.getTime() + CONFIG.LOOKAHEAD_DAYS * 86400000)) {
       return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
     }
 
@@ -159,11 +159,15 @@ function doPost(e) {
     var slotEvent = findAvailabilityEvent_(start);
     if (!slotEvent) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot is no longer available.' });
     var end = slotEvent.getEndTime();
+    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
+
+    // Notice window depends on slot type (in-person needs less lead time).
+    if (start < new Date(now.getTime() + noticeMinutesForType_(type) * 60000)) {
+      return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
+    }
 
     // Re-check nothing else on your calendars now conflicts.
     if (isBusy_(start, end)) return json_({ ok: false, reason: 'taken', message: 'Sorry, that slot was just taken.' });
-
-    var type = slotType_(slotEvent.getTitle());   // 'online' | 'inperson' | ''
 
     if (action === 'book-inperson' && type !== 'inperson') {
       return json_({ ok: false, reason: 'invalid', message: 'This endpoint only books in-person slots.' });
@@ -204,9 +208,15 @@ function doPost(e) {
 
 // --------------------------- CORE LOGIC ----------------------------
 
+// Minimum notice for a given slot type — in-person needs less lead time than
+// online/other slots (CONFIG.MIN_NOTICE_MINUTES_INPERSON vs. MIN_NOTICE_MINUTES).
+function noticeMinutesForType_(type) {
+  return (type === 'inperson' && CONFIG.MIN_NOTICE_MINUTES_INPERSON != null)
+    ? CONFIG.MIN_NOTICE_MINUTES_INPERSON : CONFIG.MIN_NOTICE_MINUTES;
+}
+
 function computeAvailability_(days) {
   var now = new Date();
-  var earliest = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000);
   var horizon = new Date(now.getTime() + days * 86400000);
 
   var events = getAvailabilityCalendar_().getEvents(now, horizon);
@@ -219,12 +229,14 @@ function computeAvailability_(days) {
     if (ev.isAllDayEvent()) continue;            // all-day events aren't slots
     var s = ev.getStartTime();
     var e = ev.getEndTime();
+    var type = slotType_(ev.getTitle());          // 'online' | 'inperson' | ''
+    var earliest = new Date(now.getTime() + noticeMinutesForType_(type) * 60000);
     if (s < earliest) continue;                  // too soon / in the past
     if (overlapsBusy_(busy, s, e)) continue;     // conflicts elsewhere -> hide
     slots.push({
       start: Utilities.formatDate(s, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
       end: Utilities.formatDate(e, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-      type: slotType_(ev.getTitle())   // 'online' | 'inperson' | ''
+      type: type
     });
   }
   return slots;
