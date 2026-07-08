@@ -362,12 +362,41 @@ function json_(obj) {
 // Runs in-process — no unreliable self-HTTP call. Reset caches per run so a
 // fresh instance recomputes cleanly.
 function keepWarm() {
+  _availabilityCal = null; _bookingCal = null; _busyCals = null;
   try {
-    _availabilityCal = null; _bookingCal = null; _busyCals = null;
     var days = CONFIG.LOOKAHEAD_DAYS;
     var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days) });
     CacheService.getScriptCache().put('avail_' + days, payload, CONFIG.CACHE_SECONDS);
   } catch (err) {}
+  // Piggyback an hourly cleanup of expired/unbookable slots (no separate trigger).
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (Date.now() - Number(props.getProperty('lastCleanup') || 0) > 3600000) {
+      cleanupExpiredSlots();
+      props.setProperty('lastCleanup', String(Date.now()));
+    }
+  } catch (err) {}
+}
+
+// Delete availability slots that can no longer be booked (past, or now inside the
+// MIN_NOTICE window) and were never booked — so old empty slots don't pile up on
+// the availability calendar. Booked slots are already removed on booking.
+// Runs hourly via keepWarm; can also be Run manually once to clear a backlog.
+function cleanupExpiredSlots() {
+  var cal = getAvailabilityCalendar_();
+  var now = new Date();
+  var cutoff = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000); // no longer bookable
+  var from = new Date(now.getTime() - 120 * 86400000);                     // look back 120 days
+  var events = cal.getEvents(from, cutoff);
+  var deleted = 0;
+  for (var i = 0; i < events.length && deleted < 200; i++) {               // cap per run
+    var ev = events[i];
+    if (ev.isAllDayEvent()) continue;                                      // keep all-day notes
+    if (ev.getStartTime().getTime() < cutoff.getTime()) {
+      try { ev.deleteEvent(); deleted++; } catch (_) {}
+    }
+  }
+  return deleted;
 }
 
 function setupKeepWarm() {
