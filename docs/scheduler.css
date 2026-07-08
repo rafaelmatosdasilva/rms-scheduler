@@ -236,8 +236,8 @@
 .rmssch-slot-dur { display: block; font-size: 0.875rem; color: var(--rmssch-muted); margin-top: 2px; }
 .rmssch-tz { margin-top: 12px; font-size: 0.875rem; color: var(--rmssch-muted); }
 
-/* Largest breakpoint: bigger host avatar. */
-@media (min-width: 1680px) {
+/* Wide widget: bigger host avatar. */
+@media (min-width: 1140px) {
   .rmssch-host-av { width: 72px; height: 72px; }
 }
 
