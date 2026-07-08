@@ -83,9 +83,13 @@ function doGet(e) {
 
     // Short cache so repeat loads are instant. Booking clears it (see doPost);
     // and a slot booked within the window is caught by the re-check in doPost.
+    // ?refresh=1 bypasses the cache entirely and recomputes fresh from the
+    // calendar right now — use it to force an update or to sanity-check whether
+    // the widget is showing stale cache vs. a deeper compute issue.
+    var forceRefresh = (e && e.parameter && e.parameter.refresh) ? true : false;
     var cache = CacheService.getScriptCache();
     var key = 'avail_' + days;
-    var hit = cache.get(key);
+    var hit = forceRefresh ? null : cache.get(key);
     var payload = hit;
     if (!payload) {
       payload = JSON.stringify({
