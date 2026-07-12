@@ -44,8 +44,8 @@ var CONFIG = {
 
   TIMEZONE: 'Europe/Lisbon',        // MUST match appsscript.json "timeZone"
   LOOKAHEAD_DAYS: 30,               // how far ahead slots are offered
-  MIN_NOTICE_MINUTES: 600,          // default notice (10h) — applies to online/other slots
-  MIN_NOTICE_MINUTES_INPERSON: 600, // in-person slots also need 10h notice
+  MIN_NOTICE_MINUTES: 2880,         // default notice (48h) — applies to online/other slots
+  MIN_NOTICE_MINUTES_INPERSON: 600, // in-person slots only need 10h notice
   BUFFER_MINUTES: 0,                // gap enforced around conflicting events
   // Delete the availability event on booking so the slot is removed at the source.
   // doPost claims the slot (delete-first) inside a script lock, and the booking
@@ -504,13 +504,20 @@ function removeCalendarChangeTrigger() {
 function cleanupExpiredSlots() {
   var cal = getAvailabilityCalendar_();
   var now = new Date();
-  var cutoff = new Date(now.getTime() + CONFIG.MIN_NOTICE_MINUTES * 60000); // no longer bookable
+  // Fetch out to the widest notice window, then delete each slot against its own
+  // type-specific window so a longer online window can't sweep away still-bookable
+  // in-person slots (or vice versa).
+  var maxNotice = Math.max(CONFIG.MIN_NOTICE_MINUTES,
+    CONFIG.MIN_NOTICE_MINUTES_INPERSON != null ? CONFIG.MIN_NOTICE_MINUTES_INPERSON : 0);
+  var horizon = new Date(now.getTime() + maxNotice * 60000);
   var from = new Date(now.getTime() - 120 * 86400000);                     // look back 120 days
-  var events = cal.getEvents(from, cutoff);
+  var events = cal.getEvents(from, horizon);
   var deleted = 0;
   for (var i = 0; i < events.length && deleted < 200; i++) {               // cap per run
     var ev = events[i];
     if (ev.isAllDayEvent()) continue;                                      // keep all-day notes
+    var type = slotType_(ev.getTitle());
+    var cutoff = new Date(now.getTime() + noticeMinutesForType_(type) * 60000); // no longer bookable
     if (ev.getStartTime().getTime() < cutoff.getTime()) {
       try { ev.deleteEvent(); deleted++; } catch (_) {}
     }
