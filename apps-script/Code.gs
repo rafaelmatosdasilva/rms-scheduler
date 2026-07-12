@@ -94,8 +94,12 @@ function doGet(e) {
     var hit = forceRefresh ? null : cache.get(key);
     var payload = hit;
     if (!payload) {
+      // Read-only compute on the public path: never mutate the calendar in
+      // response to an anonymous GET. Expired-slot deletion happens only on the
+      // trusted refresh path (refreshAvailabilityCache_, driven by keep-warm and
+      // the calendar-edit trigger).
       payload = JSON.stringify({
-        ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days)
+        ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days, false)
       });
       cache.put(key, payload, CONFIG.CACHE_SECONDS);
     }
@@ -112,6 +116,7 @@ function doGet(e) {
 
     return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
+    console.error('doGet failed: ' + err);
     return json_({ ok: false, error: String(err) });
   }
 }
@@ -216,14 +221,18 @@ function doPost(e) {
       } catch (bookErr) {
         // Booking write failed after the slot was consumed — restore the slot so
         // it isn't silently lost, then surface the error.
+        console.error('booking write failed: ' + bookErr);
         if (CONFIG.CONSUME_SLOT) {
-          try { getAvailabilityCalendar_().createEvent(slotTitle, start, end); } catch (_) {}
+          try { getAvailabilityCalendar_().createEvent(slotTitle, start, end); }
+          catch (restoreErr) { console.error('slot restore failed after booking error: ' + restoreErr); }
         }
         return json_({ ok: false, error: String(bookErr) });
       }
 
       // Invalidate the availability cache so the booked slot disappears at once.
-      try { CacheService.getScriptCache().remove('avail_' + CONFIG.LOOKAHEAD_DAYS); } catch (_) {}
+      // doGet caches per ?days= value, so clear every possible key, not just the
+      // default — otherwise a ?days=N request keeps serving the booked slot.
+      try { CacheService.getScriptCache().removeAll(availCacheKeys_()); } catch (cacheErr) { console.error('cache clear failed: ' + cacheErr); }
 
       return json_({
         ok: true,
@@ -237,6 +246,7 @@ function doPost(e) {
       try { lock.releaseLock(); } catch (_) {}
     }
   } catch (err) {
+    console.error('doPost failed: ' + err);
     return json_({ ok: false, error: String(err) });
   }
 }
@@ -250,7 +260,11 @@ function noticeMinutesForType_(type) {
     ? CONFIG.MIN_NOTICE_MINUTES_INPERSON : CONFIG.MIN_NOTICE_MINUTES;
 }
 
-function computeAvailability_(days) {
+// allowDelete: when true, availability events that have fallen inside their
+// notice window are removed from the calendar as they're encountered. Only the
+// trusted refresh path passes true; the public GET path passes false so an
+// anonymous request can never trigger calendar writes.
+function computeAvailability_(days, allowDelete) {
   var now = new Date();
   var horizon = new Date(now.getTime() + days * 86400000);
 
@@ -268,9 +282,10 @@ function computeAvailability_(days) {
     var earliest = new Date(now.getTime() + noticeMinutesForType_(type) * 60000);
     if (s < earliest) {                          // too soon / in the past
       // Once a slot falls inside its notice window it can never be booked again,
-      // so remove it from the calendar now instead of waiting for the hourly
-      // cleanup — keeps the calendar in sync with what the widget shows.
-      try { ev.deleteEvent(); } catch (_) {}
+      // so remove it from the calendar (on the trusted refresh path only) instead
+      // of waiting for the hourly cleanup — keeps the calendar in sync with the
+      // widget without letting an anonymous GET trigger deletions.
+      if (allowDelete) { try { ev.deleteEvent(); } catch (delErr) { console.error('slot delete failed: ' + delErr); } }
       continue;
     }
     if (overlapsBusy_(busy, s, e)) continue;     // conflicts elsewhere -> hide
@@ -286,7 +301,7 @@ function computeAvailability_(days) {
 /** Classify a slot from its availability-event title. */
 function slotType_(title) {
   var t = (title || '').toLowerCase();
-  if (/in.?person|presencial|presencial|in-person/.test(t)) return 'inperson';
+  if (/in.?person|presencial/.test(t)) return 'inperson';
   if (/online|remote|meet|zoom|call|virtual/.test(t)) return 'online';
   return '';
 }
@@ -448,6 +463,13 @@ function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
+/** Every availability cache key doGet could have written (one per ?days= value). */
+function availCacheKeys_() {
+  var keys = [];
+  for (var d = 1; d <= CONFIG.LOOKAHEAD_DAYS; d++) keys.push('avail_' + d);
+  return keys;
+}
+
 // ------------------------- KEEP-WARM (optional) --------------------
 // Apps Script web apps go "cold" after a few idle minutes, making the next
 // request slow. Run setupKeepWarm() ONCE from the editor (press Run, then
@@ -462,7 +484,8 @@ function json_(obj) {
 function refreshAvailabilityCache_() {
   _availabilityCal = null; _bookingCal = null; _busyCals = null;
   var days = CONFIG.LOOKAHEAD_DAYS;
-  var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days) });
+  // Trusted path: allowDelete=true prunes slots that have crossed their notice window.
+  var payload = JSON.stringify({ ok: true, timeZone: CONFIG.TIMEZONE, label: CONFIG.TIMEZONE, slots: computeAvailability_(days, true) });
   CacheService.getScriptCache().put('avail_' + days, payload, CONFIG.CACHE_SECONDS);
 }
 
