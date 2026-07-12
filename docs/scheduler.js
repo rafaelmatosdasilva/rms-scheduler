@@ -682,7 +682,7 @@
         '<div class="rmssch-field"><label><span class="rmssch-lbl">Your session notes <span class="rmssch-req">*</span></span><textarea name="notes" rows="2" required placeholder="e.g. Share a bit about what you&#39;d like to cover, plus any relevant links."></textarea></label></div>' +
         '<div class="rmssch-hp" aria-hidden="true"><label>Leave this field empty<input name="hp_check" tabindex="-1" autocomplete="off"></label></div>' +
         (pending ? '<div class="rmssch-field rmssch-check-field"><label class="rmssch-check"><input type="checkbox" name="ticket" required><span>I have a valid LisboaUX co-working day ticket. <span class="rmssch-req">*</span></span></label></div>' : '') +
-        '<div class="rmssch-msg rmssch-error" data-err hidden></div>' +
+        '<div class="rmssch-msg rmssch-error" data-err hidden role="alert" aria-live="assertive"></div>' +
         '<div class="rmssch-actions">' +
           '<button class="rmssch-back" type="button" data-back>Back</button>' +
           '<button class="rmssch-btn" type="submit">' + esc(btnLabel) + ICON.check + '</button>' +
@@ -724,22 +724,36 @@
     errEl.hidden = true;
 
     var btn = form.querySelector('button[type="submit"]');
+    var btnHtml = btn.innerHTML;   // preserve the type-specific label + check icon
+    // Restore the button to its original state so the label/icon aren't lost on
+    // an error retry (was previously reset to a generic "Confirm booking").
+    function resetBtn() { btn.disabled = false; btn.innerHTML = btnHtml; }
     btn.disabled = true;
     btn.innerHTML = '<span class="rmssch-spinner"></span> Booking…';
 
-    var links = [].map.call(form.querySelectorAll('[name="link"]'), function (el) { return el.value.trim(); }).filter(Boolean);
-    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), links: links, ticket: form.ticket ? form.ticket.checked : true, hp: form.hp_check.value };
-    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+    // Abort a hung booking so the button can't stick on "Booking…" forever
+    // (Apps Script /exec can stall). Mirrors the availability GET timeout.
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 30000) : null;
+    var done = function () { if (timer) clearTimeout(timer); };
+
+    var payload = { start: this.selectedSlot.start, name: name, email: email, notes: form.notes.value.trim(), ticket: form.ticket ? form.ticket.checked : true, hp: form.hp_check.value };
+    var opts = { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) };
+    if (ctrl) opts.signal = ctrl.signal;
+    fetch(ENDPOINT, opts)
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        done();
         if (data && data.ok) return self.renderConfirm(name, email, data);
         if (data && data.reason === 'taken') { self.selectedSlot = null; self.start(); return; }
-        btn.disabled = false; btn.textContent = 'Confirm booking';
+        resetBtn();
         showErr(errEl, (data && data.message) || 'Something went wrong. Please try again.');
       })
-      .catch(function () {
-        btn.disabled = false; btn.textContent = 'Confirm booking';
-        showErr(errEl, 'Network error. Please try again.');
+      .catch(function (err) {
+        done();
+        resetBtn();
+        var aborted = err && err.name === 'AbortError';
+        showErr(errEl, aborted ? 'That took too long. Please try again.' : 'Network error. Please try again.');
       });
   };
 
@@ -752,10 +766,14 @@
     this.frame(
       '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">' + ICON.check + '</div>' +
-        '<div class="rmssch-title">' + title + '</div>' +
+        '<div class="rmssch-title" tabindex="-1" role="status">' + title + '</div>' +
         '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
         noteHtml('A calendar invite is on its way to ' + email + '.') +
       '</div>');
+    // Move focus to the confirmation heading so keyboard/screen-reader users
+    // aren't stranded on the now-removed submit button, and the success is read out.
+    var h = this.root.querySelector('.rmssch-title');
+    if (h && h.focus) { try { h.focus(); } catch (_) {} }
   };
 
   // ---- utils -----------------------------------------------------
@@ -782,6 +800,9 @@
   function markField(input, bad) {
     var field = input.closest && input.closest('.rmssch-field');
     if (field) field.classList.toggle('is-invalid', !!bad);
+    // Announce the invalid state to assistive tech, not just visually.
+    if (bad) input.setAttribute('aria-invalid', 'true');
+    else input.removeAttribute('aria-invalid');
   }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {

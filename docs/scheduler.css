@@ -396,6 +396,9 @@
 .rmssch-error { color: #b42318; }
 .rmssch-confirm { text-align: center; padding: 8px 0; display: flex; flex-direction: column; align-items: center; }
 .rmssch-confirm .rmssch-title { margin-bottom: 4px; }
+/* The heading is focused programmatically for a11y (see renderConfirm) — it's a
+   label, not an interactive control, so it carries no focus ring. */
+.rmssch-confirm .rmssch-title:focus { outline: none; }
 /* Booking details sit inside an info box, everything centered. */
 /* Same look as the left info panel (plain rows), just centered. */
 .rmssch-confirm-box {
