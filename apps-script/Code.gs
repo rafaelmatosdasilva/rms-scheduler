@@ -266,7 +266,13 @@ function computeAvailability_(days) {
     var e = ev.getEndTime();
     var type = slotType_(ev.getTitle());          // 'online' | 'inperson' | ''
     var earliest = new Date(now.getTime() + noticeMinutesForType_(type) * 60000);
-    if (s < earliest) continue;                  // too soon / in the past
+    if (s < earliest) {                          // too soon / in the past
+      // Once a slot falls inside its notice window it can never be booked again,
+      // so remove it from the calendar now instead of waiting for the hourly
+      // cleanup — keeps the calendar in sync with what the widget shows.
+      try { ev.deleteEvent(); } catch (_) {}
+      continue;
+    }
     if (overlapsBusy_(busy, s, e)) continue;     // conflicts elsewhere -> hide
     slots.push({
       start: Utilities.formatDate(s, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
