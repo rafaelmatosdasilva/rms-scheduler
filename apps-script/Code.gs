@@ -67,6 +67,12 @@ var CONFIG = {
   // NOTE: Meet links require the advanced "Google Calendar API" service enabled
   // in the Apps Script editor (Services + -> Google Calendar API). If it isn't
   // enabled the booking still succeeds — just without the Meet link.
+  // Email YOU (the host) whenever a booking is made — the guest gets a calendar
+  // invite, but as the event organizer you otherwise receive no notification.
+  // NOTIFY_EMAIL '' defaults to the script owner's address (the deploying user).
+  NOTIFY_ON_BOOKING: true,
+  NOTIFY_EMAIL: '',
+
   ADD_MEET_FOR_ONLINE: true,
   IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon',
   // Optional Google Maps link appended to the in-person event location so the
@@ -227,6 +233,13 @@ function doPost(e) {
           catch (restoreErr) { console.error('slot restore failed after booking error: ' + restoreErr); }
         }
         return json_({ ok: false, error: String(bookErr) });
+      }
+
+      // Notify the host (the guest already gets the calendar invite). Never let a
+      // mail failure break a confirmed booking.
+      if (CONFIG.NOTIFY_ON_BOOKING) {
+        try { notifyHost_({ name: name, email: email, notes: notes, links: links, type: type, start: start, end: end, meetLink: event.hangoutLink || '' }); }
+        catch (mailErr) { console.error('host notification failed: ' + mailErr); }
       }
 
       // Invalidate the availability cache so the booked slot disappears at once.
@@ -409,6 +422,32 @@ function createBooking_(title, description, start, end, email, type) {
 }
 
 function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"); }
+
+/**
+ * Email the host a summary of a new booking. The guest receives the calendar
+ * invite; this is the host's own heads-up (organizers get no invite email for
+ * events on their own calendar). Best-effort — callers swallow/log failures.
+ */
+function notifyHost_(b) {
+  var to = (CONFIG.NOTIFY_EMAIL || '').trim() || Session.getEffectiveUser().getEmail();
+  if (!to) return;
+  var typeLabel = b.type === 'inperson' ? 'In-person' : (b.type === 'online' ? 'Online' : 'Session');
+  var when = Utilities.formatDate(b.start, CONFIG.TIMEZONE, "EEE d MMM yyyy, HH:mm") +
+    '–' + Utilities.formatDate(b.end, CONFIG.TIMEZONE, "HH:mm") + ' (' + CONFIG.TIMEZONE + ')';
+  var subject = 'New booking: ' + b.name + ' — ' + typeLabel + ' ' +
+    Utilities.formatDate(b.start, CONFIG.TIMEZONE, "d MMM HH:mm");
+  var lines = [
+    typeLabel + ' session booked.',
+    '',
+    'When:  ' + when,
+    'Name:  ' + b.name,
+    'Email: ' + b.email
+  ];
+  if (b.notes) lines.push('', 'Notes:', b.notes);
+  if (b.links && b.links.length) lines.push('', 'Links:', b.links.map(function (l) { return '- ' + l; }).join('\n'));
+  if (b.meetLink) lines.push('', 'Meet: ' + b.meetLink);
+  MailApp.sendEmail({ to: to, subject: subject, body: lines.join('\n'), replyTo: b.email || undefined });
+}
 
 // ---------------------------- HELPERS ------------------------------
 
