@@ -27,7 +27,7 @@ GET {base}?action=inperson-availability
 ```
 - `start` / `end` are ISO 8601 with the UTC offset already applied (`timeZone` is given for display only).
 - This endpoint **only ever returns in-person slots** — online slots and anything else are never included.
-- Cached ~10 minutes server-side; poll it as often as you like.
+- Cached ~3 minutes server-side; poll it as often as you like.
 
 ```sh
 curl "{base}?action=inperson-availability"
@@ -97,7 +97,9 @@ curl -X POST "{base}?action=book-inperson" \
 
 ## Rate limits / reliability
 
-- No published rate limit; keep polling availability to a reasonable interval (once every
+- No published rate limit on availability; keep polling to a reasonable interval (once every
   30–60s is plenty — responses are cached).
+- Booking is capped per email address (a rolling limit); once exceeded, `POST` returns
+  `{ "ok": false, "reason": "rate", "message": "…" }`. Treat `reason: "rate"` as non-retryable.
 - Apps Script occasionally returns a transient error on a request; treat any non-2xx or network
   error as retryable and retry once or twice with a short delay before surfacing a failure.

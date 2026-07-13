@@ -78,9 +78,14 @@
     (function () {
       var el = document.getElementById('rms-scheduler');
       var last = 0;
+      // Target the actual embedding page's origin instead of broadcasting to any
+      // parent. document.referrer is the embedder's URL on load; fall back to '*'
+      // only when it's unavailable (e.g. referrer stripped).
+      var TARGET = '*';
+      try { if (document.referrer) TARGET = new URL(document.referrer).origin; } catch (e) {}
       function post() {
         var h = Math.ceil(el ? el.getBoundingClientRect().height : document.documentElement.scrollHeight);
-        if (h && h !== last) { last = h; try { parent.postMessage({ type: 'rmssch:height', height: h }, '*'); } catch (e) {} }
+        if (h && h !== last) { last = h; try { parent.postMessage({ type: 'rmssch:height', height: h }, TARGET); } catch (e) {} }
       }
       if ('ResizeObserver' in window && el) new ResizeObserver(post).observe(el);
       window.addEventListener('load', post);

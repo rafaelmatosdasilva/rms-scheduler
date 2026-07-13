@@ -73,6 +73,12 @@ var CONFIG = {
   NOTIFY_ON_BOOKING: true,
   NOTIFY_EMAIL: 'hello@rafaelmatosdasilva.com',
 
+  // Anti-abuse: cap how many bookings a single email may make within a rolling
+  // window, so a script can't drain availability. Apps Script exposes no client
+  // IP, so this is per-email only. 0 = unlimited.
+  MAX_BOOKINGS_PER_EMAIL: 3,
+  RATE_WINDOW_SECONDS: 21600,       // 6h (CacheService max TTL)
+
   ADD_MEET_FOR_ONLINE: true,
   IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon',
   // Optional Google Maps link appended to the in-person event location so the
@@ -166,6 +172,12 @@ function doPost(e) {
       return json_({ ok: false, reason: 'taken', message: 'That time is no longer bookable.' });
     }
 
+    // Per-email rate limit (fast reject before we take the lock). Counter is only
+    // incremented on a successful booking, so failed attempts don't lock anyone out.
+    if (CONFIG.MAX_BOOKINGS_PER_EMAIL && bookingCount_(email) >= CONFIG.MAX_BOOKINGS_PER_EMAIL) {
+      return json_({ ok: false, reason: 'rate', message: 'You’ve reached the booking limit for now. Please email to arrange more times.' });
+    }
+
     // Serialize the check -> claim -> create section. Apps Script runs doPost
     // concurrently with no auto-locking, so without this two overlapping POSTs
     // for the same slot could both pass the checks below and both send an invite.
@@ -241,6 +253,9 @@ function doPost(e) {
         try { notifyHost_({ name: name, email: email, notes: notes, links: links, type: type, start: start, end: end, meetLink: event.hangoutLink || '' }); }
         catch (mailErr) { console.error('host notification failed: ' + mailErr); }
       }
+
+      // Count this successful booking toward the per-email rate limit.
+      if (CONFIG.MAX_BOOKINGS_PER_EMAIL) { try { bumpBookingCount_(email); } catch (rlErr) { console.error('rate bump failed: ' + rlErr); } }
 
       // Invalidate the availability cache so the booked slot disappears at once.
       // doGet caches per ?days= value, so clear every possible key, not just the
@@ -500,6 +515,26 @@ function clampInt_(v, dflt, min, max) {
 
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- per-email booking rate limit (CacheService, rolling RATE_WINDOW_SECONDS) ---
+// Keyed by a hash of the lowercased email so odd characters/length can't break
+// the cache key. Best-effort: a cache miss just means the visitor gets a fresh
+// allowance, never a wrongful block.
+function rateKey_(email) {
+  var norm = (email || '').toLowerCase();
+  var digest = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, norm);
+  return 'rl_' + Utilities.base64EncodeWebSafe(digest);
+}
+function bookingCount_(email) {
+  var v = CacheService.getScriptCache().get(rateKey_(email));
+  return v ? (parseInt(v, 10) || 0) : 0;
+}
+function bumpBookingCount_(email) {
+  var cache = CacheService.getScriptCache();
+  var key = rateKey_(email);
+  var n = bookingCount_(email) + 1;
+  cache.put(key, String(n), CONFIG.RATE_WINDOW_SECONDS);
 }
 
 /** Every availability cache key doGet could have written (one per ?days= value). */
