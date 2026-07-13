@@ -71,7 +71,7 @@ var CONFIG = {
   // invite, but as the event organizer you otherwise receive no notification.
   // NOTIFY_EMAIL '' defaults to the script owner's address (the deploying user).
   NOTIFY_ON_BOOKING: true,
-  NOTIFY_EMAIL: '',
+  NOTIFY_EMAIL: 'hello@rafaelmatosdasilva.com',
 
   ADD_MEET_FOR_ONLINE: true,
   IN_PERSON_LOCATION: 'Casa do Impacto, Lisbon',
@@ -429,8 +429,8 @@ function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T
  * events on their own calendar). Best-effort — callers swallow/log failures.
  */
 function notifyHost_(b) {
-  var to = (CONFIG.NOTIFY_EMAIL || '').trim() || Session.getEffectiveUser().getEmail();
-  if (!to) return;
+  var to = (CONFIG.NOTIFY_EMAIL || '').trim();
+  if (!to) return;   // no recipient configured -> nothing to send
   var typeLabel = b.type === 'inperson' ? 'In-person' : (b.type === 'online' ? 'Online' : 'Session');
   var when = Utilities.formatDate(b.start, CONFIG.TIMEZONE, "EEE d MMM yyyy, HH:mm") +
     '–' + Utilities.formatDate(b.end, CONFIG.TIMEZONE, "HH:mm") + ' (' + CONFIG.TIMEZONE + ')';
