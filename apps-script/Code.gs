@@ -73,6 +73,13 @@ var CONFIG = {
   NOTIFY_ON_BOOKING: true,
   NOTIFY_EMAIL: 'hello@rafaelmatosdasilva.com',
 
+  // Guest-facing footer added to every invite description. BOOKING_PAGE_URL tells
+  // people where the session was booked (they keep asking for the link again);
+  // RESCHEDULE_EMAIL is how they ask to move or cancel it. Kept separate from
+  // NOTIFY_EMAIL (host alerts) even though the address matches today. '' omits a line.
+  BOOKING_PAGE_URL: 'https://www.rafaelmatosdasilva.com/book-a-session',
+  RESCHEDULE_EMAIL: 'hello@rafaelmatosdasilva.com',
+
   // Anti-abuse: cap how many bookings a single email may make within a rolling
   // window, so a script can't drain availability. Apps Script exposes no client
   // IP, so this is per-email only. 0 = unlimited.
@@ -231,7 +238,8 @@ function doPost(e) {
       var title = titleTpl.replace('{name}', name).replace('{first}', first);
       var description = 'Name: ' + name + '\nEmail: ' + email +
         (notes ? ('\n\nNotes:\n' + notes) : '') +
-        (links.length ? ('\n\nLinks:\n' + links.map(function (l) { return '- ' + l; }).join('\n')) : '');
+        (links.length ? ('\n\nLinks:\n' + links.map(function (l) { return '- ' + l; }).join('\n')) : '') +
+        inviteFooter_();
 
       var event;
       try {
@@ -437,6 +445,18 @@ function createBooking_(title, description, start, end, email, type) {
 }
 
 function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"); }
+
+/**
+ * Guest-facing footer appended to every invite description: where the session was
+ * booked from, and how to reschedule. Google auto-links bare URLs in the invite,
+ * so no markup is needed. Either line is omitted when its CONFIG value is empty.
+ */
+function inviteFooter_() {
+  var parts = [];
+  if (CONFIG.BOOKING_PAGE_URL) parts.push('Booked via ' + CONFIG.BOOKING_PAGE_URL);
+  if (CONFIG.RESCHEDULE_EMAIL) parts.push('Need to reschedule or cancel? Email ' + CONFIG.RESCHEDULE_EMAIL);
+  return parts.length ? ('\n\n' + parts.join('\n\n')) : '';
+}
 
 /**
  * Email the host a summary of a new booking. The guest receives the calendar
