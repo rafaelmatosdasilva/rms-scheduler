@@ -452,10 +452,10 @@ function iso_(d) { return Utilities.formatDate(d, CONFIG.TIMEZONE, "yyyy-MM-dd'T
  * so no markup is needed. Either line is omitted when its CONFIG value is empty.
  */
 function inviteFooter_() {
-  var parts = [];
-  if (CONFIG.BOOKING_PAGE_URL) parts.push('Booked via ' + CONFIG.BOOKING_PAGE_URL);
-  if (CONFIG.RESCHEDULE_EMAIL) parts.push('Need to reschedule or cancel? Email ' + CONFIG.RESCHEDULE_EMAIL);
-  return parts.length ? ('\n\n' + parts.join('\n\n')) : '';
+  var lines = [];
+  if (CONFIG.BOOKING_PAGE_URL) lines.push('Booked via ' + CONFIG.BOOKING_PAGE_URL);
+  if (CONFIG.RESCHEDULE_EMAIL) lines.push('To reschedule or cancel, email ' + CONFIG.RESCHEDULE_EMAIL);
+  return lines.length ? ('\n\nBooking info:\n' + lines.join('\n')) : '';
 }
 
 /**
