@@ -428,10 +428,31 @@ function createBooking_(title, description, start, end, email, type) {
     if (wantsMeet) {
       resource.conferenceData = { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
     }
-    var ev = Calendar.Events.insert(resource, CONFIG.BOOKING_CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'all' });
-    if (!wantsMeet && (ev.hangoutLink || ev.conferenceData)) {
-      // Remove an auto-added conference so in-person invites carry no Meet link.
-      try { ev = Calendar.Events.patch({ conferenceData: null }, CONFIG.BOOKING_CALENDAR_ID, ev.id, { conferenceDataVersion: 1, sendUpdates: 'all' }); } catch (e) {}
+    // Insert WITHOUT notifying: when a Meet conference is attached, Google appends
+    // its own dial-in block to the description ("Não edite esta secção", tel:
+    // numbers, tel.meet link). Sending the invite here would mail that block out.
+    var ev = Calendar.Events.insert(resource, CONFIG.BOOKING_CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'none' });
+
+    // Reset the description to exactly what we composed, which drops Google's
+    // appended block. The joinable Meet link lives in conferenceData/hangoutLink —
+    // rendered by Calendar as its own "Join with Google Meet" section — so it
+    // survives this. THIS patch is what delivers the invite (sendUpdates: 'all'),
+    // so the guest's email carries the cleaned description.
+    var patch = { description: description };
+    // Remove an auto-added conference so in-person invites carry no Meet link.
+    if (!wantsMeet && (ev.hangoutLink || ev.conferenceData)) patch.conferenceData = null;
+    try {
+      ev = Calendar.Events.patch(patch, CONFIG.BOOKING_CALENDAR_ID, ev.id, { conferenceDataVersion: 1, sendUpdates: 'all' });
+    } catch (patchErr) {
+      // This patch is the only thing that notifies the guest, so failing here would
+      // leave them with no invite at all. Retry sending updates without changing
+      // anything, so the invite still goes out even though the cleanup didn't.
+      console.error('invite patch failed (description may keep Google\'s Meet block): ' + patchErr);
+      try {
+        ev = Calendar.Events.patch({ summary: title }, CONFIG.BOOKING_CALENDAR_ID, ev.id, { sendUpdates: 'all' });
+      } catch (notifyErr) {
+        console.error('invite delivery retry failed — guest may not have been notified: ' + notifyErr);
+      }
     }
     return ev;
   }
