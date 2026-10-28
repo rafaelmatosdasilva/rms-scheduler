@@ -10,7 +10,8 @@ slot, and its length is the call length** — draw a 30-min event for a 30-min c
 a 45-min one for 45. When a visitor books, the appointment (with their invite) is
 written to your **Booking calendar** and the availability event is consumed so it
 can't be booked twice. Slots also auto-hide if anything on your *other* calendars
-conflicts, so you can't be double-booked.
+conflicts, so you can't be double-booked. Events shown as **Free** don't count, so you
+can keep a co-working day or similar marker over your slots by setting it to Free.
 
 - **Frontend:** one plain HTML/JS snippet (`docs/scheduler.js` + `scheduler.css`), hosted free on **GitHub Pages**.
 - **Backend:** a free **Google Apps Script** web app (`apps-script/Code.gs`) that runs *as you* via `CalendarApp` — **no paid host, no service account, no stored credentials.**

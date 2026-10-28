@@ -348,13 +348,59 @@ function collectBusy_(start, end) {
   var cals = getBusyCalendars_();
   var out = [];
   for (var i = 0; i < cals.length; i++) {
-    var evs = cals[i].getEvents(start, end);
-    for (var j = 0; j < evs.length; j++) {
-      if (evs[j].getMyStatus() === CalendarApp.GuestStatus.NO) continue;
-      out.push([evs[j].getStartTime().getTime() - buffer, evs[j].getEndTime().getTime() + buffer]);
-    }
+    var spans = busySpans_(cals[i], start, end);
+    for (var j = 0; j < spans.length; j++) out.push([spans[j][0] - buffer, spans[j][1] + buffer]);
   }
   return out;
+}
+
+/**
+ * [startMs, endMs] of the events on `cal` that make you busy between start and
+ * end. Declined events and events shown as "Free" don't count, so a marker like
+ * a co-working day (set to Free) doesn't hide the slots inside it. Google makes
+ * all-day events Free by default; mark one Busy to block the whole day.
+ * Free/Busy is only readable through the advanced Calendar service; without it
+ * (or if the call fails) every non-declined event counts, as before.
+ */
+function busySpans_(cal, start, end) {
+  var out = [];
+  if (typeof Calendar !== 'undefined' && Calendar.Events) {
+    try {
+      var pageToken = null;
+      do {
+        var opts = {
+          timeMin: start.toISOString(), timeMax: end.toISOString(), singleEvents: true, maxResults: 2500,
+          fields: 'nextPageToken,items(start,end,transparency,attendees(self,responseStatus))'
+        };
+        if (pageToken) opts.pageToken = pageToken;
+        var res = Calendar.Events.list(cal.getId(), opts);
+        var items = res.items || [];
+        for (var i = 0; i < items.length; i++) {
+          var it = items[i];
+          if (it.transparency === 'transparent') continue;   // shown as Free
+          if ((it.attendees || []).some(function (a) { return a.self && a.responseStatus === 'declined'; })) continue;
+          out.push([eventTimeMs_(it.start), eventTimeMs_(it.end)]);
+        }
+        pageToken = res.nextPageToken;
+      } while (pageToken);
+      return out;
+    } catch (err) {
+      console.error('Calendar.Events.list failed, counting every event as busy: ' + err);
+      out = [];
+    }
+  }
+  var evs = cal.getEvents(start, end);
+  for (var j = 0; j < evs.length; j++) {
+    if (evs[j].getMyStatus() === CalendarApp.GuestStatus.NO) continue;
+    out.push([evs[j].getStartTime().getTime(), evs[j].getEndTime().getTime()]);
+  }
+  return out;
+}
+
+/** An event's start/end in ms: timed events carry dateTime; all-day ones a bare date. */
+function eventTimeMs_(t) {
+  return t.dateTime ? new Date(t.dateTime).getTime()
+    : Utilities.parseDate(t.date, CONFIG.TIMEZONE, 'yyyy-MM-dd').getTime();
 }
 
 function overlapsBusy_(busy, s, e) {
@@ -377,24 +423,14 @@ function findAvailabilityEvent_(start) {
 }
 
 /**
- * True if any calendar you own (EXCEPT the availability calendar, whose
- * events are offers rather than commitments) has a non-declined event
+ * True if any busy calendar (EXCEPT the availability calendar, whose events
+ * are offers rather than commitments) has a non-declined, non-Free event
  * overlapping [start, end), expanded by BUFFER_MINUTES.
  */
 function isBusy_(start, end) {
   var buffer = CONFIG.BUFFER_MINUTES * 60000;
-  var cals = getBusyCalendars_();
-  for (var i = 0; i < cals.length; i++) {
-    var evs = cals[i].getEvents(new Date(start.getTime() - buffer), new Date(end.getTime() + buffer));
-    for (var j = 0; j < evs.length; j++) {
-      var ev = evs[j];
-      if (ev.getMyStatus() === CalendarApp.GuestStatus.NO) continue; // declined
-      var es = ev.getStartTime().getTime() - buffer;
-      var ee = ev.getEndTime().getTime() + buffer;
-      if (es < end.getTime() && ee > start.getTime()) return true;
-    }
-  }
-  return false;
+  var busy = collectBusy_(new Date(start.getTime() - buffer), new Date(end.getTime() + buffer));
+  return overlapsBusy_(busy, start, end);
 }
 
 /**
