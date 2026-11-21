@@ -9,7 +9,8 @@
  *   data-mount="#some-id"    where to render (default "#rms-scheduler")
  *   data-title="Book a call" heading text
  *   data-css="path.css"      override the stylesheet URL (defaults to sibling scheduler.css)
- *   data-timezone="Area/City" force a display timezone (default: visitor's own)
+ *   data-timezone="Area/City" starting display timezone (default: visitor's own)
+ *   data-timezone-lock="1"   hide the timezone picker (keep data-timezone fixed)
  *
  * Talks to the Apps Script backend using only "simple" requests (GET +
  * text/plain POST) so no CORS preflight is triggered. See Code.gs.
@@ -28,7 +29,18 @@
   var ENDPOINT = attr('data-endpoint').trim();
   var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
   var TITLE = attr('data-title') || 'Book a time';
-  var VIEW_TZ = attr('data-timezone');
+  // embed.html carries its settings in the URL (its <script> tag is static so a
+  // sandboxed iframe still runs it), so ?tz= / ?tzlock= stand in for the data-*.
+  var QS = (function () {
+    try { return new URLSearchParams(location.search); } catch (_) { return { get: function () { return null; } }; }
+  })();
+  function setting(dataName, queryName) {
+    return (attr(dataName) || QS.get(queryName) || '').trim();
+  }
+  var VIEW_TZ = setting('data-timezone', 'tz');
+  // The visitor can re-pick their timezone unless the embed locks it.
+  var TZ_LOCKED = /^(1|true|yes)$/i.test(setting('data-timezone-lock', 'tzlock'));
+  var TZ_STORE = 'rmssch.tz';
   // Event-info side panel (Calendly-style). All optional.
   var HOST_NAME = attr('data-host-name');
   var HOST_AVATAR = attr('data-host-avatar');
@@ -162,7 +174,10 @@
   function Widget(root) {
     this.root = root;
     this.tz = null;
-    this.viewTz = VIEW_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone) || undefined;
+    this.autoTz = detectTz();                  // the visitor's own zone, as the browser reports it
+    // Starting zone: the visitor's last choice, else the embed's data-timezone, else their own.
+    this.viewTz = (!TZ_LOCKED && savedTz()) || VIEW_TZ || this.autoTz || undefined;
+    this.slots = [];        // raw slots, kept so a timezone change can re-group them
     this.byDay = {};        // 'YYYY-MM-DD' -> [{start,end}...]
     this.slotByStart = {};  // start ISO -> {start,end}
     this.dayKeys = [];      // sorted available day keys
@@ -207,7 +222,8 @@
     p.then(function (data) {
         if (!data || !data.ok) throw new Error((data && data.error) || 'Bad response');
         self.tz = data.timeZone || undefined;
-        self.groupByDay(data.slots || []);
+        self.slots = data.slots || [];
+        self.groupByDay(self.slots);
         self.renderPicker();
       })
       .catch(function (err) {
@@ -261,7 +277,11 @@
       this.byDay[key].push(slot);
       this.slotByStart[slot.start] = slot;
     }
-    this.selectedDay = this.dayKeys[0] || null;
+    // A timezone change re-groups the same slots, so hold on to the chosen day
+    // (or the day the chosen slot has moved to) instead of jumping back to the first.
+    var keep = (this.selectedSlot && this.dayKeyFromIso(this.selectedSlot.start)) || this.selectedDay;
+    this.selectedDay = (keep && this.byDay[keep]) ? keep : (this.dayKeys[0] || null);
+    this.focusKey = this.selectedDay;
     if (this.selectedDay) {
       var p = this.selectedDay.split('-');
       this.viewY = +p[0]; this.viewM = +p[1] - 1;
@@ -313,6 +333,111 @@
     return this.timeLabel(slot.start) + (slot.end ? ' – ' + this.timeLabel(slot.end) : '') + ', ' + day;
   };
 
+  // ---- timezone row ----------------------------------------------
+
+  // "GMT+1" / "GMT-4:30" for a zone right now (DST included, since it reads today's date).
+  Widget.prototype.tzOffsetLabel = function (tz) {
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
+        .formatToParts(new Date());
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === 'timeZoneName') return parts[i].value.replace('UTC', 'GMT');
+      }
+    } catch (_) {}
+    return '';
+  };
+  // The wall-clock time in a zone right now - the strongest "is this my time?" cue.
+  Widget.prototype.tzNowLabel = function (tz) {
+    try {
+      return new Intl.DateTimeFormat(this.hour12 ? 'en-US' : 'en-GB', {
+        timeZone: tz, hour: this.hour12 ? 'numeric' : '2-digit', minute: '2-digit', hour12: this.hour12
+      }).format(new Date()).replace(' AM', 'am').replace(' PM', 'pm');
+    } catch (_) { return ''; }
+  };
+
+  // The zone list: the visitor's own first, then the host's, then every zone the
+  // browser knows (falling back to a short list on browsers without the full set).
+  Widget.prototype.tzChoices = function () {
+    var out = [], seen = {};
+    function add(tz) { if (tz && !seen[tz]) { seen[tz] = 1; out.push(tz); } }
+    add(this.autoTz); add(this.viewTz); add(this.tz);
+    var all = [];
+    try { all = (Intl.supportedValuesOf && Intl.supportedValuesOf('timeZone')) || []; } catch (_) {}
+    if (!all.length) all = TZ_FALLBACK;
+    all.slice().sort().forEach(add);
+    return out;
+  };
+
+  // Globe row: a native <select> (so mobile gets its own wheel) plus a muted
+  // line showing the offset and the current time there.
+  Widget.prototype.tzRowHtml = function (readOnly) {
+    var self = this;
+    var tz = this.viewTz || this.autoTz;
+    if (!tz) return '';
+    var isOwn = tz === this.autoTz;
+    var now = this.tzNowLabel(tz);
+    var detail = [isOwn ? 'Your timezone' : 'Not your timezone',
+      this.tzOffsetLabel(tz), now ? now + ' now' : ''].filter(Boolean).join(' \u00b7 ');
+
+    // Once booked there is nothing to change, so the zone is one plain line
+    // that sits with the other confirmation rows.
+    if (readOnly) {
+      return '<div class="rmssch-info-row rmssch-tz-row is-done">' +
+        '<span class="rmssch-ic">' + ICON.globe + '</span>' +
+        '<span>' + esc(prettyTz(tz)) +
+          (this.tzOffsetLabel(tz) ? ' \u00b7 ' + esc(this.tzOffsetLabel(tz)) : '') + '</span>' +
+      '</div>';
+    }
+
+    var head;
+    if (TZ_LOCKED) {
+      head = '<span class="rmssch-tz-static">' + esc(prettyTz(tz)) + '</span>';
+    } else {
+      var opts = this.tzChoices().map(function (z) {
+        return '<option value="' + esc(z) + '"' + (z === tz ? ' selected' : '') + '>' + esc(prettyTz(z)) + '</option>';
+      }).join('');
+      head = '<span class="rmssch-tz-select">' +
+        '<select data-tz aria-label="Times are shown in this timezone, change it if it is wrong">' + opts + '</select>' +
+        '<span class="rmssch-tz-caret" aria-hidden="true">\u25be</span>' +
+      '</span>';
+    }
+
+    return '<div class="rmssch-info-row rmssch-tz-row' + (isOwn ? '' : ' is-elsewhere') + '">' +
+      '<span class="rmssch-ic">' + ICON.globe + '</span>' +
+      '<span class="rmssch-tz">' + head +
+        '<span class="rmssch-tz-detail">' + esc(detail) + '</span>' +
+      '</span>' +
+    '</div>';
+  };
+
+  // Re-group the same slots in a new zone and redraw, keeping the visitor's place.
+  Widget.prototype.applyTz = function (tz) {
+    if (!tz || tz === this.viewTz) return;
+    this.viewTz = tz;
+    try { window.localStorage.setItem(TZ_STORE, tz); } catch (_) {}
+    this.groupByDay(this.slots);
+    if (this.selectedSlot) this.selectedSlot = this.slotByStart[this.selectedSlot.start] || null;
+    if (this.root.querySelector('.rmssch-form')) this.renderForm();
+    else this.updatePicker();
+  };
+
+  // The globe row lives in the info panel, so it is re-bound after every render.
+  Widget.prototype.bindInfo = function () {
+    var self = this, sel = this.root.querySelector('[data-tz]');
+    if (sel) sel.onchange = function () { self.applyTz(sel.value); };
+    // The row claims what time it is "now", so keep that true while the widget
+    // sits open instead of leaving the clock frozen at render time.
+    if (!this._tzTick) {
+      this._tzTick = setInterval(function () {
+        var el = self.root.querySelector('.rmssch-tz-detail');
+        if (!el) return;
+        var tz = self.viewTz || self.autoTz, now = self.tzNowLabel(tz);
+        el.textContent = [tz === self.autoTz ? 'Your timezone' : 'Not your timezone',
+          self.tzOffsetLabel(tz), now ? now + ' now' : ''].filter(Boolean).join(' \u00b7 ');
+      }, 30000);
+    }
+  };
+
   // ---- shells ----------------------------------------------------
 
   Widget.prototype.frame = function (html) { this.root.innerHTML = html; this.lockHeight(); };
@@ -337,7 +462,7 @@
     return t || '';
   };
 
-  Widget.prototype.metaRows = function () {
+  Widget.prototype.metaRows = function (readOnly) {
     var slot = this.selectedSlot, dayKey = this.selectedDay;
     function row(icon, inner, muted) {
       return '<div class="rmssch-info-row' + (muted ? ' is-muted' : '') + '"><span class="rmssch-ic">' + icon + '</span><span>' + inner + '</span></div>';
@@ -358,7 +483,9 @@
       var d = this.durationLabel(slot);
       timeRow = row(ICON.clock, esc(this.timeRangeLabel(slot) + (d ? ', ' + d : '')));
     }
-    return dateRow + locRow + timeRow;
+    // The timezone sits with the date and time it qualifies, so a visitor
+    // reading "Tuesday, 10:00am" sees which clock that is without looking away.
+    return dateRow + locRow + timeRow + this.tzRowHtml(readOnly);
   };
 
   // Left event-info panel.
@@ -374,6 +501,7 @@
   Widget.prototype.shell = function (mainHtml) {
     this.root.classList.remove('rmssch-centered', 'rmssch-grow');
     this.frame('<div class="rmssch-shell">' + this.infoHtml() + '<div class="rmssch-main">' + mainHtml + '</div></div>');
+    this.bindInfo();
   };
 
   Widget.prototype.card = function (inner) {
@@ -381,7 +509,7 @@
     this.root.classList.add('rmssch-centered');
     this.frame(
       '<div class="rmssch-title">' + esc(TITLE) + '</div>' +
-      '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in your timezone · ' + esc(this.viewTz.replace(/_/g, ' ')) : '&nbsp;') + '</div>' +
+      '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in ' + esc(prettyTz(this.viewTz)) + (this.tzOffsetLabel(this.viewTz) ? ' · ' + esc(this.tzOffsetLabel(this.viewTz)) : '') : '&nbsp;') + '</div>' +
       '<div class="rmssch-narrow">' + inner + '</div>');
   };
 
@@ -427,6 +555,7 @@
     // leaving the avatar/title in place.
     var meta = this.root.querySelector('.rmssch-info-meta');
     if (meta) meta.innerHTML = this.metaRows();
+    this.bindInfo();
   };
 
   Widget.prototype.bindPicker = function () {
@@ -767,7 +896,7 @@
       '<div class="rmssch-confirm">' +
         '<div class="rmssch-confirm-check">' + ICON.check + '</div>' +
         '<div class="rmssch-title" tabindex="-1" role="status">' + title + '</div>' +
-        '<div class="rmssch-confirm-box">' + this.metaRows() + '</div>' +
+        '<div class="rmssch-confirm-box">' + this.metaRows(true) + '</div>' +
         noteHtml('A calendar invite is on its way to ' + email + '.') +
       '</div>');
     // Move focus to the confirmation heading so keyboard/screen-reader users
@@ -777,6 +906,37 @@
   };
 
   // ---- utils -----------------------------------------------------
+
+  // The visitor's own zone, as the browser reports it.
+  function detectTz() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) { return ''; }
+  }
+  // A zone the visitor picked on an earlier visit, if the browser kept it.
+  function savedTz() {
+    try { return window.localStorage.getItem(TZ_STORE) || ''; } catch (_) { return ''; }
+  }
+  // "Europe/Lisbon" reads as "Lisbon (Europe)" - the city is what people look for.
+  function prettyTz(tz) {
+    var parts = String(tz).split('/');
+    var city = parts[parts.length - 1].replace(/_/g, ' ');
+    var area = parts.length > 1 ? parts[0].replace(/_/g, ' ') : '';
+    return area ? city + ' (' + area + ')' : city;
+  }
+  // Browsers without Intl.supportedValuesOf (older Safari) still get a usable list.
+  var TZ_FALLBACK = [
+    'Pacific/Honolulu', 'America/Anchorage', 'America/Los_Angeles', 'America/Denver',
+    'America/Mexico_City', 'America/Chicago', 'America/New_York', 'America/Toronto',
+    'America/Bogota', 'America/Sao_Paulo', 'America/Argentina/Buenos_Aires',
+    'Atlantic/Azores', 'UTC', 'Europe/London', 'Europe/Lisbon', 'Europe/Dublin',
+    'Europe/Madrid', 'Europe/Paris', 'Europe/Berlin', 'Europe/Amsterdam', 'Europe/Brussels',
+    'Europe/Zurich', 'Europe/Rome', 'Europe/Stockholm', 'Europe/Warsaw', 'Europe/Athens',
+    'Europe/Bucharest', 'Europe/Helsinki', 'Europe/Kyiv', 'Europe/Istanbul', 'Europe/Moscow',
+    'Africa/Casablanca', 'Africa/Lagos', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Nairobi',
+    'Asia/Jerusalem', 'Asia/Dubai', 'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka',
+    'Asia/Bangkok', 'Asia/Jakarta', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Shanghai',
+    'Asia/Seoul', 'Asia/Tokyo', 'Australia/Perth', 'Australia/Adelaide', 'Australia/Brisbane',
+    'Australia/Sydney', 'Pacific/Auckland'
+  ];
 
   // Does the visitor's locale use a 12-hour clock?
   function detectHour12() {

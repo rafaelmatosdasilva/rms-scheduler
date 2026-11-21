@@ -123,9 +123,10 @@ git add docs/embed.html
 ```
 
 **Optional `<script>` attributes:** `data-mount` (CSS selector, default `#rms-scheduler`),
-`data-title`, `data-css` (override stylesheet URL), `data-timezone` (force a display
-timezone, e.g. `Europe/Lisbon`; by default each visitor sees slots in **their own**
-auto-detected timezone), and theming — `data-accent`, `data-accent-contrast` (text on
+`data-title`, `data-css` (override stylesheet URL), `data-timezone` (the **starting**
+display timezone, e.g. `Europe/Lisbon`; by default each visitor starts in **their own**
+auto-detected timezone), `data-timezone-lock="1"` (hide the timezone picker and keep
+`data-timezone` fixed), and theming — `data-accent`, `data-accent-contrast` (text on
 accent), `data-dot` (time-slot dot color).
 
 ```html
@@ -134,7 +135,7 @@ accent), `data-dot` (time-slot dot color).
 ```
 
 **Theming the Figma iframe (`embed.html`)** via URL query params —
-`accent`, `contrast`, `dot`, `title`, `tz` (URL-encode the `#` as `%23`):
+`accent`, `contrast`, `dot`, `title`, `tz`, `tzlock` (URL-encode the `#` as `%23`):
 
 ```
 https://YOU.github.io/rms-scheduler/embed.html?accent=%23ff5c00&contrast=%23ffffff
@@ -167,6 +168,14 @@ Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 ---
 
 ## How it works / notes
+
+- **Timezone, shown and changeable:** every step names the timezone the times are drawn
+  in, with its GMT offset and the current clock time there, so a visitor can check at a
+  glance that 10:00 means what they think it means. The widget starts in the visitor's
+  own auto-detected zone and labels it *Your timezone*; picking another from the globe
+  row re-draws every time (and flags the zone as *Not your timezone*). The choice is
+  remembered in `localStorage` for their next visit. Nothing about the booking itself
+  changes — slots are sent and stored as absolute instants, so the picker is display-only.
 
 - **No credentials to leak:** the widget calls your Apps Script URL, which runs with *your*
   Google permissions. Nothing secret ships to the browser.
