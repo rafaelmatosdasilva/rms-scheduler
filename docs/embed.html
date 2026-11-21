@@ -73,6 +73,44 @@
     })();
   </script>
 
+  <!-- The freshness check.
+
+       GitHub Pages serves every file with a fixed max-age=600 and offers no way
+       to change it. The ?v= stamp busts scheduler.js, but it cannot bust THIS
+       file, which is the one carrying the stamp - so for up to 10 minutes after
+       a deploy a returning visitor keeps getting the previous widget.
+
+       So: render immediately from whatever is cached (no delay for anyone), then
+       ask version.json what the current stamp is. If we are behind, reload once
+       at a URL the cache has never seen, which pulls a fresh embed.html and with
+       it the new stamp. Costs one small request; reloads only while stale. -->
+  <script>
+    (function () {
+      var tag = document.querySelector('script[src*="scheduler.js"]');
+      var src = tag && tag.getAttribute('src');
+      var mine = src && (src.match(/[?&]v=([A-Za-z0-9]+)/) || [])[1];
+      if (!mine) return;                         // nothing stamped, nothing to compare
+
+      var q;
+      try { q = new URLSearchParams(location.search); } catch (e) { return; }
+
+      // A unique URL each time, so neither the browser nor the Pages CDN can
+      // answer this from the same cache that is serving us the stale page.
+      fetch('version.json?_=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var live = d && d.v;
+          if (!live || live === mine) return;     // current, or no answer worth acting on
+          // Already reloaded for this version and STILL stale: the cache is
+          // serving the old file even on a fresh URL. Stop rather than loop.
+          if (q.get('_v') === live) return;
+          q.set('_v', live);
+          location.replace(location.pathname + '?' + q.toString() + location.hash);
+        })
+        .catch(function () {});                   // offline or blocked: keep what we have
+    })();
+  </script>
+
   <!-- Report our height to the parent so it can auto-resize the iframe. -->
   <script>
     (function () {
