@@ -168,6 +168,12 @@ Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 
 ## How it works / notes
 
+- **The timezone is on screen:** every step shows the zone the times are drawn in and its
+  GMT offset (e.g. *Lisbon (Europe) · GMT+0*), so a visitor can confirm that 10:00 means
+  what they think it means before they book. It follows the visitor's own auto-detected
+  zone unless `data-timezone` forces one. Display only — slots are sent and stored as
+  absolute instants, so the label never changes which moment gets booked.
+
 - **No credentials to leak:** the widget calls your Apps Script URL, which runs with *your*
   Google permissions. Nothing secret ships to the browser.
 - **CORS:** Apps Script web apps can’t answer preflight requests. The widget deliberately uses

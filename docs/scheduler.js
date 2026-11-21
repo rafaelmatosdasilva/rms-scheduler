@@ -9,7 +9,7 @@
  *   data-mount="#some-id"    where to render (default "#rms-scheduler")
  *   data-title="Book a call" heading text
  *   data-css="path.css"      override the stylesheet URL (defaults to sibling scheduler.css)
- *   data-timezone="Area/City" force a display timezone (default: visitor's own)
+ *   data-timezone="Area/City" display timezone (default: the visitor's own)
  *
  * Talks to the Apps Script backend using only "simple" requests (GET +
  * text/plain POST) so no CORS preflight is triggered. See Code.gs.
@@ -28,7 +28,15 @@
   var ENDPOINT = attr('data-endpoint').trim();
   var MOUNT_SEL = attr('data-mount') || '#rms-scheduler';
   var TITLE = attr('data-title') || 'Book a time';
-  var VIEW_TZ = attr('data-timezone');
+  // embed.html carries its settings in the URL (its <script> tag is static so a
+  // sandboxed iframe still runs it), so ?tz= stands in for data-timezone.
+  var QS = (function () {
+    try { return new URLSearchParams(location.search); } catch (_) { return { get: function () { return null; } }; }
+  })();
+  function setting(dataName, queryName) {
+    return (attr(dataName) || QS.get(queryName) || '').trim();
+  }
+  var VIEW_TZ = setting('data-timezone', 'tz');
   // Event-info side panel (Calendly-style). All optional.
   var HOST_NAME = attr('data-host-name');
   var HOST_AVATAR = attr('data-host-avatar');
@@ -162,7 +170,7 @@
   function Widget(root) {
     this.root = root;
     this.tz = null;
-    this.viewTz = VIEW_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone) || undefined;
+    this.viewTz = VIEW_TZ || detectTz() || undefined;
     this.byDay = {};        // 'YYYY-MM-DD' -> [{start,end}...]
     this.slotByStart = {};  // start ISO -> {start,end}
     this.dayKeys = [];      // sorted available day keys
@@ -313,6 +321,32 @@
     return this.timeLabel(slot.start) + (slot.end ? ' – ' + this.timeLabel(slot.end) : '') + ', ' + day;
   };
 
+  // ---- timezone row ----------------------------------------------
+
+  // "GMT+1" / "GMT-4:30" for a zone right now (DST included, since it reads today's date).
+  Widget.prototype.tzOffsetLabel = function (tz) {
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
+        .formatToParts(new Date());
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === 'timeZoneName') return parts[i].value.replace('UTC', 'GMT');
+      }
+    } catch (_) {}
+    return '';
+  };
+
+  // One plain row, the same shape as the date and location above it, naming the
+  // clock the times are drawn in so a visitor can confirm it before booking.
+  Widget.prototype.tzRowHtml = function () {
+    var tz = this.viewTz;
+    if (!tz) return '';
+    var off = this.tzOffsetLabel(tz);
+    return '<div class="rmssch-info-row">' +
+      '<span class="rmssch-ic">' + ICON.globe + '</span>' +
+      '<span>' + esc(prettyTz(tz)) + (off ? ' \u00b7 ' + esc(off) : '') + '</span>' +
+    '</div>';
+  };
+
   // ---- shells ----------------------------------------------------
 
   Widget.prototype.frame = function (html) { this.root.innerHTML = html; this.lockHeight(); };
@@ -358,7 +392,9 @@
       var d = this.durationLabel(slot);
       timeRow = row(ICON.clock, esc(this.timeRangeLabel(slot) + (d ? ', ' + d : '')));
     }
-    return dateRow + locRow + timeRow;
+    // The timezone sits with the date and time it qualifies, so a visitor
+    // reading "Tuesday, 10:00am" sees which clock that is without looking away.
+    return dateRow + locRow + timeRow + this.tzRowHtml();
   };
 
   // Left event-info panel.
@@ -381,7 +417,7 @@
     this.root.classList.add('rmssch-centered');
     this.frame(
       '<div class="rmssch-title">' + esc(TITLE) + '</div>' +
-      '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in your timezone · ' + esc(this.viewTz.replace(/_/g, ' ')) : '&nbsp;') + '</div>' +
+      '<div class="rmssch-sub">' + (this.viewTz ? 'Times shown in ' + esc(prettyTz(this.viewTz)) + (this.tzOffsetLabel(this.viewTz) ? ' · ' + esc(this.tzOffsetLabel(this.viewTz)) : '') : '&nbsp;') + '</div>' +
       '<div class="rmssch-narrow">' + inner + '</div>');
   };
 
@@ -778,6 +814,17 @@
 
   // ---- utils -----------------------------------------------------
 
+  // The visitor's own zone, as the browser reports it.
+  function detectTz() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) { return ''; }
+  }
+  // "Europe/Lisbon" reads as "Lisbon (Europe)" - the city is what people look for.
+  function prettyTz(tz) {
+    var parts = String(tz).split('/');
+    var city = parts[parts.length - 1].replace(/_/g, ' ');
+    var area = parts.length > 1 ? parts[0].replace(/_/g, ' ') : '';
+    return area ? city + ' (' + area + ')' : city;
+  }
   // Does the visitor's locale use a 12-hour clock?
   function detectHour12() {
     try {
