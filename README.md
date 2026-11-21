@@ -105,6 +105,16 @@ the same version). So a push with changed assets always busts the browser cache 
 needed. If you clone fresh, re-install the hook: `cp` the two lines below into
 `.git/hooks/pre-commit` and `chmod +x` it.
 
+**… including `embed.html` itself.** The stamp can’t bust the file that *carries* the
+stamp, and GitHub Pages serves everything with a fixed `max-age=600` that it gives you
+no way to change. That left a 10-minute window after each deploy where a returning
+visitor still got the previous widget. So the stamper also writes
+[`docs/version.json`](docs/version.json), and `embed.html` renders immediately from
+cache, then asks that file what the current stamp is. If it’s behind, it reloads **once**
+at a URL the cache has never seen (`?_v=<hash>`, theme params preserved), which pulls a
+fresh `embed.html` and with it the new `scheduler.js`. Costs one ~30-byte request per
+load; reloads only while actually stale, and never twice for the same version.
+
 ```sh
 node scripts/stamp-version.mjs || exit 1
 git add docs/embed.html
@@ -203,3 +213,4 @@ Any theme token can also still be overridden with plain CSS on `#rms-scheduler`
 | `.clasp.json` | clasp config: `scriptId` + `rootDir: apps-script` |
 | `deploy-backend.sh` | `clasp push` + redeploy the live web app in one command |
 | `scripts/stamp-version.mjs` | Content-hash asset cache-buster (run by the pre-commit hook) |
+| `docs/version.json` | The current stamp, so a cached `embed.html` can tell it’s stale |
