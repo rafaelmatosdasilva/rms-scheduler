@@ -117,7 +117,7 @@ load; reloads only while actually stale, and never twice for the same version.
 
 ```sh
 node scripts/stamp-version.mjs || exit 1
-git add docs/embed.html
+git add docs/embed.html docs/version.json
 ```
 
 ---
