@@ -77,36 +77,6 @@
 .rmssch-when { display: flex; flex-direction: column; gap: 2px; }
 .rmssch-when-time { color: var(--rmssch-muted); }
 .rmssch-ic { flex: 0 0 17px; color: currentColor; opacity: 0.85; margin-top: 1px; }
-
-/* -- timezone row: the globe line in the info panel -- */
-/* The row reads as one block: the zone on top, the offset + current time under
-   it, so a visitor can check the clock they're booking against at a glance. */
-.rmssch-tz { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.rmssch-tz-detail { font-size: 0.8rem; font-weight: 600; color: var(--rmssch-muted); }
-.rmssch-tz-static { font-weight: 650; }
-/* A zone the visitor did not come from is flagged, not hidden. */
-.rmssch-tz-row.is-elsewhere .rmssch-tz-detail { color: var(--rmssch-fg); opacity: 0.75; }
-
-/* The native <select> keeps the mobile wheel; the wrapper draws the control. */
-.rmssch-tz-select {
-  position: relative; display: inline-flex; align-items: center; align-self: flex-start;
-  max-width: 100%; border-radius: 7px; background: var(--rmssch-surface);
-  border: 1px solid var(--rmssch-border); transition: border-color 0.15s ease;
-}
-.rmssch-tz-select:hover { border-color: var(--rmssch-muted); }
-.rmssch-tz-select select {
-  appearance: none; -webkit-appearance: none; background: none; border: 0; margin: 0;
-  padding: 3px 24px 3px 8px; width: 100%; max-width: 100%;
-  font: inherit; font-size: 0.875rem; font-weight: 650; line-height: 1.35;
-  color: var(--rmssch-fg); cursor: pointer;
-  text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
-}
-.rmssch-tz-select select:focus-visible { outline: 2px solid var(--rmssch-accent); outline-offset: 1px; border-radius: 6px; }
-.rmssch-tz-caret { position: absolute; right: 7px; color: var(--rmssch-muted); pointer-events: none; font-size: 0.7rem; line-height: 1; }
-/* The globe lines up with the control, not with the row's first text line. */
-.rmssch-tz-row .rmssch-ic { margin-top: 6px; }
-.rmssch-tz-row.is-done .rmssch-ic { margin-top: 1px; }
-
 .rmssch-ic svg { width: 17px; height: 17px; display: block; }
 
 .rmssch-form-head { font-size: 1rem; font-weight: 650; margin-bottom: 14px; }
