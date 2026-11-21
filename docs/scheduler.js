@@ -323,11 +323,13 @@
 
   // ---- timezone row ----------------------------------------------
 
-  // "GMT+1" / "GMT-4:30" for a zone right now (DST included, since it reads today's date).
-  Widget.prototype.tzOffsetLabel = function (tz) {
+  // "GMT+1" / "GMT-4:30" for a zone on a given instant (default: now). Passing the
+  // selected slot/day matters: slots run 30 days ahead, so they can sit across a
+  // DST change from today and carry a different offset.
+  Widget.prototype.tzOffsetLabel = function (tz, iso) {
     try {
       var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
-        .formatToParts(new Date());
+        .formatToParts(iso ? new Date(iso) : new Date());
       for (var i = 0; i < parts.length; i++) {
         if (parts[i].type === 'timeZoneName') return parts[i].value.replace('UTC', 'GMT');
       }
@@ -337,10 +339,10 @@
 
   // One plain row, the same shape as the date and location above it, naming the
   // clock the times are drawn in so a visitor can confirm it before booking.
-  Widget.prototype.tzRowHtml = function () {
+  Widget.prototype.tzRowHtml = function (iso) {
     var tz = this.viewTz;
     if (!tz) return '';
-    var off = this.tzOffsetLabel(tz);
+    var off = this.tzOffsetLabel(tz, iso);
     return '<div class="rmssch-info-row">' +
       '<span class="rmssch-ic">' + ICON.globe + '</span>' +
       '<span>' + esc(prettyTz(tz)) + (off ? ' \u00b7 ' + esc(off) : '') + '</span>' +
@@ -394,7 +396,7 @@
     }
     // The timezone sits with the date and time it qualifies, so a visitor
     // reading "Tuesday, 10:00am" sees which clock that is without looking away.
-    return dateRow + locRow + timeRow + this.tzRowHtml();
+    return dateRow + locRow + timeRow + this.tzRowHtml(refIso);
   };
 
   // Left event-info panel.
